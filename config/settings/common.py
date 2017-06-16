@@ -31,7 +31,7 @@ THIRD_PARTY_APPS = (
 
 # Apps specific for this project go here.
 LOCAL_APPS = (
-    # 'apps.xxx',  # 新增app
+    'apps.account',  # 新增app
 )
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
 
@@ -44,9 +44,7 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    # 'apps.sysadmin.middleware.QtsAuthenticationMiddleware',
-    # 'apps.sysadmin.middleware.SysExceptionMiddleware',
-    # 'apps.sysadmin.middleware.SysLogMiddleware',  # 增加log日志记录
+    'apps.Middleware'
 )
 DEBUG = env.bool('DJANGO_DEBUG', True)
 # ALLOWED_HOSTS = env('DJANGO_ALLOWED_HOSTS', default='[*]')
