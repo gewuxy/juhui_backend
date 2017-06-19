@@ -11,7 +11,6 @@ SECRET_KEY = env('DJANGO_SECRET_KEY', default='@@iblmr=@aqg11zxg8xd4#nf#*edo_0@#
 ALLOWED_HOSTS = ['*']
 LOG_FILE = "./juhui.log"
 
-SGI_APPLICATION = 'ws4redis.django_runserver.application'
 # ------------------------------------------------------------------------------
 WS4REDIS_CONNECTION = {
     'host': '127.0.0.1',
