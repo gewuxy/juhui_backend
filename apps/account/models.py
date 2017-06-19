@@ -20,7 +20,7 @@ class Jh_User(models.Model):
 
     class Meta:
         managed = False
-        db_table = account_jh_user
+        db_table = 'account_jh_user'
 
     def __unicode__(self):
     	return '{0}\[{1}\]'.format(self.phone, self.nickname)
