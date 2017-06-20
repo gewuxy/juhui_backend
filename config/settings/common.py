@@ -81,3 +81,7 @@ WSGI_APPLICATION = 'config.wsgi.application'
 
 
 DATETIME_FORMAT = '%Y-%m-%d %H:%M:%S'
+
+# 阿里大于
+ALIDAYU_KEY = '24470660'
+ALIDAYU_SECRET = '7b0967b1d2f3b7159808170721d137ff'
