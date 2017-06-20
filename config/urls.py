@@ -9,6 +9,6 @@ urlpatterns = [
     url(r'^login/?$', login, name='login'),
     url(r'^register/?$', register, name='register'),
     url(r'^changepw/?$', change_pw, name='changepw'),
-    url(r'^account/', include('apps.account.urls', namespace='account'))
+    url(r'^apis/account/', include('apps.account.urls', namespace='account'))
 ]
 
