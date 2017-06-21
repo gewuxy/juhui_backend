@@ -1,14 +1,8 @@
-#!/usr/bin/env python
 # -*- coding: UTF-8 -*-
-from django.conf import settings
 from django.conf.urls import include, url
-from apps import login, register, change_pw, index
+from apps import index
 
 urlpatterns = [
     url(r'^$', index, name='index'),
-    url(r'^login/?$', login, name='login'),
-    url(r'^register/?$', register, name='register'),
-    url(r'^changepw/?$', change_pw, name='changepw'),
-    url(r'^apis/account/', include('apps.account.urls', namespace='account'))
+    url(r'^api/account/', include('apps.account.urls', namespace='account'))
 ]
-

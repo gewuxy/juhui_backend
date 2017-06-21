@@ -67,6 +67,10 @@ DATABASES = {
 #     'PORT': 27017,
 #     'DEFAULT_DB': 'juhui',
 # }
+REDIS = {
+    'HOST': 'localhost',
+    'PORT': 6379
+}
 
 DATABASES['default']['ATOMIC_REQUESTS'] = True
 TIME_ZONE = 'Asia/Shanghai'
@@ -85,3 +89,4 @@ DATETIME_FORMAT = '%Y-%m-%d %H:%M:%S'
 # 阿里大于
 ALIDAYU_KEY = '24470660'
 ALIDAYU_SECRET = '7b0967b1d2f3b7159808170721d137ff'
+CODE_EXPIRE = 90
