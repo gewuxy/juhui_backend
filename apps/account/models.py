@@ -29,3 +29,14 @@ class Jh_User(models.Model):
     def get_role_name(self):
         role_map = dict([('0', '普通人员'), ('1', '管理人员')])
         return role_map[str(self.role)]
+
+    def to_json(self):
+        fields = []
+        for field in self._meta.fields:
+            fields.append(field.name)
+
+        d = {}
+        for attr in fields:
+            d[attr] = getattr(self, attr)
+        d['user'] = d['user'].id
+        return d

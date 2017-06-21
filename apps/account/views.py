@@ -2,6 +2,7 @@
 from django.http import JsonResponse
 from django.contrib.auth.models import User
 from django.contrib import auth
+from django.views.generic import View
 import json
 import random
 
@@ -190,3 +191,50 @@ def send_sms(request):
         RESPONSE_DATA['code'] = '000000'
     RESPONSE_DATA['msg'] = str(resp)
     return JsonResponse(RESPONSE_DATA)
+
+
+class InfoView(View):
+
+    def get(self, request, *args, **kwargs):
+        mobile = request.GET.get('mobile')
+        if not mobile:
+            RESPONSE_DATA['code'] = '000002'
+            RESPONSE_DATA['msg'] = 'param mobile is required'
+            return JsonResponse(RESPONSE_DATA)
+        try:
+            jh_user = Jh_User.objects.get(mobile=mobile)
+        except:
+            RESPONSE_DATA['code'] = '000004'
+            RESPONSE_DATA['msg'] = 'account not found'
+            return JsonResponse(RESPONSE_DATA)
+        _logger.info('account {0} info: {1}'.format(mobile, jh_user.to_json()))
+        RESPONSE_DATA['code'] = '000000'
+        RESPONSE_DATA['msg'] = 'SUCCESS'
+        RESPONSE_DATA['data'].append(jh_user.to_json())
+        return JsonResponse(RESPONSE_DATA)
+
+    def post(self, request, *args, **kwargs):
+        mobile = request.POST.get('mobile')
+        if not mobile:
+            RESPONSE_DATA['code'] = '000002'
+            RESPONSE_DATA['msg'] = 'param mobile is required'
+            return JsonResponse(RESPONSE_DATA)
+        try:
+            jh_user = Jh_User.objects.get(mobile=mobile)
+        except:
+            RESPONSE_DATA['code'] = '000004'
+            RESPONSE_DATA['msg'] = 'account not found'
+            return JsonResponse(RESPONSE_DATA)
+        nickname = request.POST.get('nickname')
+        if nickname:
+            jh_user.nickname = nickname
+        img_url = request.POST.get('img_url')
+        if img_url:
+            jh_user.img_url = img_url
+        email = request.POST.get('email')
+        if email:
+            jh_user.email = email
+        jh_user.save()
+        RESPONSE_DATA['code'] = '000000'
+        RESPONSE_DATA['msg'] = 'SUCCESS'
+        return JsonResponse(RESPONSE_DATA)

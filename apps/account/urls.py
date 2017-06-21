@@ -5,7 +5,8 @@ from apps.account.views import (
     send_sms,
     login,
     logout,
-    resetpassword
+    resetpassword,
+    InfoView
 )
 
 
@@ -15,4 +16,5 @@ urlpatterns = [
     url(r'^login/$',  login, name='login'),
     url(r'^logout/$', logout, name='logout'),
     url(r'^resetpw/$', resetpassword, name='resetpassword'),
+    url(r'^info/$', InfoView.as_view(), name='info')
 ]
