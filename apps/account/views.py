@@ -210,7 +210,7 @@ class InfoView(View):
         _logger.info('account {0} info: {1}'.format(mobile, jh_user.to_json()))
         RESPONSE_DATA['code'] = '000000'
         RESPONSE_DATA['msg'] = 'SUCCESS'
-        RESPONSE_DATA['data'].append(jh_user.to_json())
+        RESPONSE_DATA['data'] = [jh_user.to_json()]
         return JsonResponse(RESPONSE_DATA)
 
     def post(self, request, *args, **kwargs):
@@ -237,4 +237,5 @@ class InfoView(View):
         jh_user.save()
         RESPONSE_DATA['code'] = '000000'
         RESPONSE_DATA['msg'] = 'SUCCESS'
+        RESPONSE_DATA['data'] = [jh_user.to_json()]
         return JsonResponse(RESPONSE_DATA)
