@@ -37,11 +37,13 @@ def register(request):
     if not is_check:
         RESPONSE_DATA['code'] = '000002'
         RESPONSE_DATA['msg'] = body
+        RESPONSE_DATA['data'] = []
         return JsonResponse(RESPONSE_DATA)
     users = User.objects.filter(username=body['mobile'])
     if len(users) > 0:
         RESPONSE_DATA['code'] = '000003'
         RESPONSE_DATA['msg'] = '用户已注册'
+        RESPONSE_DATA['data'] = []
         return JsonResponse(RESPONSE_DATA)
     user = User.objects.create_user(
         username=body['mobile'],
@@ -55,6 +57,7 @@ def register(request):
     jh_user.save()
     RESPONSE_DATA['code'] = '000000'
     RESPONSE_DATA['msg'] = 'SUCCESS'
+    RESPONSE_DATA['data'] = []
     return JsonResponse(RESPONSE_DATA)
 
 
@@ -66,12 +69,14 @@ def login(request):
     if not is_check:
         RESPONSE_DATA['code'] = '000002'
         RESPONSE_DATA['msg'] = body
+        RESPONSE_DATA['data'] = []
         return JsonResponse(RESPONSE_DATA)
     try:
         u = User.objects.get(username=body['mobile'])
     except:
         RESPONSE_DATA['code'] = '000004'
         RESPONSE_DATA['msg'] = 'account not found'
+        RESPONSE_DATA['data'] = []
         return JsonResponse(RESPONSE_DATA)
     user = auth.authenticate(username=u.username, password=body['password'])
     if user is not None:
@@ -85,6 +90,7 @@ def login(request):
     else:
         RESPONSE_DATA['code'] = '000006'
         RESPONSE_DATA['msg'] = 'password error'
+    RESPONSE_DATA['data'] = []
     return JsonResponse(RESPONSE_DATA)
 
 
@@ -99,6 +105,7 @@ def resetpassword(request):
     if not is_check:
         RESPONSE_DATA['code'] = '000002'
         RESPONSE_DATA['msg'] = body
+        RESPONSE_DATA['data'] = []
         return JsonResponse(RESPONSE_DATA)
     users = User.objects.filter(username=body['mobile'])
     if len(users) > 0:
@@ -107,10 +114,12 @@ def resetpassword(request):
         user.save()
         RESPONSE_DATA['code'] = '000000'
         RESPONSE_DATA['msg'] = 'SUCCESS'
+        RESPONSE_DATA['data'] = []
         return JsonResponse(RESPONSE_DATA)
     else:
         RESPONSE_DATA['code'] = '000004'
         RESPONSE_DATA['msg'] = 'account not found'
+        RESPONSE_DATA['data'] = []
         return JsonResponse(RESPONSE_DATA)
 
 
@@ -121,6 +130,7 @@ def logout(request):
     auth.logout(request)
     RESPONSE_DATA['code'] = '000000'
     RESPONSE_DATA['msg'] = 'SUCCESS'
+    RESPONSE_DATA['data'] = []
     return JsonResponse(RESPONSE_DATA)
 
 
@@ -157,6 +167,7 @@ def send_sms(request):
     if not is_check:
         RESPONSE_DATA['code'] = '000002'
         RESPONSE_DATA['msg'] = body
+        RESPONSE_DATA['data'] = []
         return JsonResponse(RESPONSE_DATA)
 
     extend = body.get('extend', '')
@@ -177,6 +188,7 @@ def send_sms(request):
     except:
         RESPONSE_DATA['code'] = '000005'
         RESPONSE_DATA['msg'] = '参数param错误'
+        RESPONSE_DATA['data'] = []
         return JsonResponse(RESPONSE_DATA)
     redis_client = redis.StrictRedis(host=REDIS['HOST'], port=REDIS['PORT'], db=1)
     redis_key = 'juhui_sms_code_' + mobile
@@ -190,6 +202,7 @@ def send_sms(request):
     else:
         RESPONSE_DATA['code'] = '000000'
     RESPONSE_DATA['msg'] = str(resp)
+    RESPONSE_DATA['data'] = []
     return JsonResponse(RESPONSE_DATA)
 
 
@@ -200,12 +213,14 @@ class InfoView(View):
         if not mobile:
             RESPONSE_DATA['code'] = '000002'
             RESPONSE_DATA['msg'] = 'param mobile is required'
+            RESPONSE_DATA['data'] = []
             return JsonResponse(RESPONSE_DATA)
         try:
             jh_user = Jh_User.objects.get(mobile=mobile)
         except:
             RESPONSE_DATA['code'] = '000004'
             RESPONSE_DATA['msg'] = 'account not found'
+            RESPONSE_DATA['data'] = []
             return JsonResponse(RESPONSE_DATA)
         _logger.info('account {0} info: {1}'.format(mobile, jh_user.to_json()))
         RESPONSE_DATA['code'] = '000000'
@@ -218,12 +233,14 @@ class InfoView(View):
         if not mobile:
             RESPONSE_DATA['code'] = '000002'
             RESPONSE_DATA['msg'] = 'param mobile is required'
+            RESPONSE_DATA['data'] = []
             return JsonResponse(RESPONSE_DATA)
         try:
             jh_user = Jh_User.objects.get(mobile=mobile)
         except:
             RESPONSE_DATA['code'] = '000004'
             RESPONSE_DATA['msg'] = 'account not found'
+            RESPONSE_DATA['data'] = []
             return JsonResponse(RESPONSE_DATA)
         nickname = request.POST.get('nickname')
         if nickname:
