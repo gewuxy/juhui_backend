@@ -10,10 +10,13 @@ RESPONSE_DATA = {
 
 class Middleware(object):
     def process_request(self, request):
-        if request.method != 'POST':
+        green_path = ['/api/account/register/', '/api/account/login/', '/api/account/sendsms/']
+        if request.path in green_path:
+            return
+        if not request.user.is_authenticated:
             return JsonResponse(
-                {'code': '000001',
-                 'msg': 'request method must be POST',
+                {'code': '000007',
+                 'msg': '请先登录',
                  'data': []})
 
 

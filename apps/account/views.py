@@ -1,6 +1,7 @@
 # -*- coding: utf8 -*-
 from django.http import JsonResponse
 from django.contrib.auth.models import User
+from rest_framework.authtoken.models import Token
 from django.contrib import auth
 from django.views.generic import View
 import json
@@ -82,15 +83,21 @@ def login(request):
     if user is not None:
         if user.is_active:
             auth.login(request, user)
+            token, is_created = Token.objects.get_or_create(user=user)
             RESPONSE_DATA['code'] = '000000'
             RESPONSE_DATA['msg'] = 'SUCCESS'
+            jh_user = Jh_User.objects.get(mobile=user.username)
+            jh_user_json = jh_user.to_json()
+            jh_user_json['token'] = token.key
+            RESPONSE_DATA['data'] = [jh_user_json]
         else:
             RESPONSE_DATA['code'] = '000006'
             RESPONSE_DATA['msg'] = 'disable account'
+            RESPONSE_DATA['data'] = []
     else:
         RESPONSE_DATA['code'] = '000006'
         RESPONSE_DATA['msg'] = 'password error'
-    RESPONSE_DATA['data'] = []
+        RESPONSE_DATA['data'] = []
     return JsonResponse(RESPONSE_DATA)
 
 
@@ -209,6 +216,10 @@ def send_sms(request):
 class InfoView(View):
 
     def get(self, request, *args, **kwargs):
+        if request.user.is_authenticated():
+            print('true11111111111111')
+        else:
+            print('flase2222222222222')
         mobile = request.GET.get('mobile')
         if not mobile:
             RESPONSE_DATA['code'] = '000002'

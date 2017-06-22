@@ -22,7 +22,8 @@ DJANGO_APPS = (
     'django.contrib.sessions',
     'django.contrib.sites',
     'django.contrib.messages',
-    # Admin
+    'rest_framework',
+    'rest_framework.authtoken'
 )
 
 THIRD_PARTY_APPS = (
@@ -35,6 +36,20 @@ LOCAL_APPS = (
 )
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
 
+REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAuthenticated',
+    ),
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework.authentication.TokenAuthentication',
+    )
+}
+'''
+AUTHENTICATION_BACKENDS = (
+    'apps.account.TokenBackend.TokenBackend',
+    # 'django.contrib.auth.backends.ModelBackend',
+)
+'''
 # ------------------------------------------------------------------------------
 MIDDLEWARE_CLASSES = (
     'django.middleware.security.SecurityMiddleware',
@@ -44,7 +59,7 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    # 'apps.Middleware'
+    'apps.Middleware'
 )
 DEBUG = env.bool('DJANGO_DEBUG', True)
 # ALLOWED_HOSTS = env('DJANGO_ALLOWED_HOSTS', default='[*]')
