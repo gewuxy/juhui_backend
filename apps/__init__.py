@@ -36,6 +36,8 @@ class Middleware(object):
         ]
         if request.path in green_path:
             return
+        if not (request.GET.get('token') or request.POST.get('token')):
+            return JsonResponse(get_response_data('000002'))
         if not request.user.is_authenticated:
             return JsonResponse(
                 {'code': '000007',
