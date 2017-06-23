@@ -30,6 +30,7 @@ class Jh_User(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     is_delete = models.BooleanField(default=False, verbose_name='是否无效用户')
     trade_passwd = models.CharField(max_length=16, verbose_name='交易密码', default='')
+    personal_select = models.CharField(max_length=500, verbose_name='自选', default='')
 
     class Meta:
         db_table = 'account_jh_user'
