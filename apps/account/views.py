@@ -7,7 +7,7 @@ from django.views.generic import View
 import json
 import random
 
-from apps import RESPONSE_DATA
+from apps import get_response_data
 from apps.account.models import Jh_User
 import logging
 import top  # taobao SDK
@@ -36,16 +36,12 @@ def register(request):
     # code
     # 验证码校验 end
     if not is_check:
-        RESPONSE_DATA['code'] = '000002'
-        RESPONSE_DATA['msg'] = body
-        RESPONSE_DATA['data'] = []
-        return JsonResponse(RESPONSE_DATA)
+        res = get_response_data('000002')
+        return JsonResponse(res)
     users = User.objects.filter(username=body['mobile'])
     if len(users) > 0:
-        RESPONSE_DATA['code'] = '000003'
-        RESPONSE_DATA['msg'] = '用户已注册'
-        RESPONSE_DATA['data'] = []
-        return JsonResponse(RESPONSE_DATA)
+        res = get_response_data('000003')
+        return JsonResponse(res)
     user = User.objects.create_user(
         username=body['mobile'],
         password=body['password']
@@ -56,10 +52,8 @@ def register(request):
         mobile=body['mobile'],
     )
     jh_user.save()
-    RESPONSE_DATA['code'] = '000000'
-    RESPONSE_DATA['msg'] = 'SUCCESS'
-    RESPONSE_DATA['data'] = []
-    return JsonResponse(RESPONSE_DATA)
+    res = get_response_data('000000')
+    return JsonResponse(res)
 
 
 def login(request):
@@ -68,37 +62,27 @@ def login(request):
     """
     is_check, body = is_valid(request.POST, ['mobile', 'password'])
     if not is_check:
-        RESPONSE_DATA['code'] = '000002'
-        RESPONSE_DATA['msg'] = body
-        RESPONSE_DATA['data'] = []
-        return JsonResponse(RESPONSE_DATA)
+        res = get_response_data('000002')
+        return JsonResponse(res)
     try:
         u = User.objects.get(username=body['mobile'])
     except:
-        RESPONSE_DATA['code'] = '000004'
-        RESPONSE_DATA['msg'] = 'account not found'
-        RESPONSE_DATA['data'] = []
-        return JsonResponse(RESPONSE_DATA)
+        res = get_response_data('000004')
+        return JsonResponse(res)
     user = auth.authenticate(username=u.username, password=body['password'])
     if user is not None:
         if user.is_active:
             auth.login(request, user)
             token, is_created = Token.objects.get_or_create(user=user)
-            RESPONSE_DATA['code'] = '000000'
-            RESPONSE_DATA['msg'] = 'SUCCESS'
             jh_user = Jh_User.objects.get(mobile=user.username)
             jh_user_json = jh_user.to_json()
             jh_user_json['token'] = token.key
-            RESPONSE_DATA['data'] = [jh_user_json]
+            res = get_response_data('000000', jh_user_json)
         else:
-            RESPONSE_DATA['code'] = '000006'
-            RESPONSE_DATA['msg'] = 'disable account'
-            RESPONSE_DATA['data'] = []
+            res = get_response_data('000008')
     else:
-        RESPONSE_DATA['code'] = '000006'
-        RESPONSE_DATA['msg'] = 'password error'
-        RESPONSE_DATA['data'] = []
-    return JsonResponse(RESPONSE_DATA)
+        res = get_response_data('000006')
+    return JsonResponse(res)
 
 
 def resetpassword(request):
@@ -110,24 +94,18 @@ def resetpassword(request):
     # code
     # 验证码校验 end
     if not is_check:
-        RESPONSE_DATA['code'] = '000002'
-        RESPONSE_DATA['msg'] = body
-        RESPONSE_DATA['data'] = []
-        return JsonResponse(RESPONSE_DATA)
+        res = get_response_data('000002')
+        return JsonResponse(res)
     users = User.objects.filter(username=body['mobile'])
     if len(users) > 0:
         user = users[0]
         user.set_password(body['password'])
         user.save()
-        RESPONSE_DATA['code'] = '000000'
-        RESPONSE_DATA['msg'] = 'SUCCESS'
-        RESPONSE_DATA['data'] = []
-        return JsonResponse(RESPONSE_DATA)
+        res = get_response_data('000000')
+        return JsonResponse(res)
     else:
-        RESPONSE_DATA['code'] = '000004'
-        RESPONSE_DATA['msg'] = 'account not found'
-        RESPONSE_DATA['data'] = []
-        return JsonResponse(RESPONSE_DATA)
+        res = get_response_data('000004')
+        return JsonResponse(res)
 
 
 def logout(request):
@@ -135,10 +113,8 @@ def logout(request):
     退出登录
     '''
     auth.logout(request)
-    RESPONSE_DATA['code'] = '000000'
-    RESPONSE_DATA['msg'] = 'SUCCESS'
-    RESPONSE_DATA['data'] = []
-    return JsonResponse(RESPONSE_DATA)
+    res = get_response_data('000000')
+    return JsonResponse(res)
 
 
 def _SendSms(extend, sms_type, sign, param, num, template):
@@ -172,10 +148,8 @@ def send_sms(request):
     '''
     is_check, body = is_valid(request.POST, ['mobile'])
     if not is_check:
-        RESPONSE_DATA['code'] = '000002'
-        RESPONSE_DATA['msg'] = body
-        RESPONSE_DATA['data'] = []
-        return JsonResponse(RESPONSE_DATA)
+        res = get_response_data('000002')
+        return JsonResponse(res)
 
     extend = body.get('extend', '')
     sms_type = body.get('sms_type', 'normal')
@@ -193,66 +167,47 @@ def send_sms(request):
         param_code = param_dict['code']
         param_expire = int(param_dict['time'])
     except:
-        RESPONSE_DATA['code'] = '000005'
-        RESPONSE_DATA['msg'] = '参数param错误'
-        RESPONSE_DATA['data'] = []
-        return JsonResponse(RESPONSE_DATA)
+        res = get_response_data('000005')
+        return JsonResponse(res)
     redis_client = redis.StrictRedis(host=REDIS['HOST'], port=REDIS['PORT'], db=1)
     redis_key = 'juhui_sms_code_' + mobile
     redis_client.set(redis_key, param_code)
     redis_client.expire(redis_key, param_expire)
 
     resp = _SendSms(extend, sms_type, sign_name, param, mobile, sms_template)
+    res = get_response_data('000000')
     if isinstance(resp, str):
         if resp.find('ERROR_MESSAGE') == 0:
-            RESPONSE_DATA['code'] = '000005'
-    else:
-        RESPONSE_DATA['code'] = '000000'
-    RESPONSE_DATA['msg'] = str(resp)
-    RESPONSE_DATA['data'] = []
-    return JsonResponse(RESPONSE_DATA)
+            res = get_response_data('000005')
+    return JsonResponse(res)
 
 
 class InfoView(View):
 
     def get(self, request, *args, **kwargs):
-        if request.user.is_authenticated():
-            print('true11111111111111')
-        else:
-            print('flase2222222222222')
         mobile = request.GET.get('mobile')
         if not mobile:
-            RESPONSE_DATA['code'] = '000002'
-            RESPONSE_DATA['msg'] = 'param mobile is required'
-            RESPONSE_DATA['data'] = []
-            return JsonResponse(RESPONSE_DATA)
+            res = get_response_data('000002')
+            return JsonResponse(res)
         try:
             jh_user = Jh_User.objects.get(mobile=mobile)
         except:
-            RESPONSE_DATA['code'] = '000004'
-            RESPONSE_DATA['msg'] = 'account not found'
-            RESPONSE_DATA['data'] = []
-            return JsonResponse(RESPONSE_DATA)
+            res = get_response_data('000004')
+            return JsonResponse(res)
         _logger.info('account {0} info: {1}'.format(mobile, jh_user.to_json()))
-        RESPONSE_DATA['code'] = '000000'
-        RESPONSE_DATA['msg'] = 'SUCCESS'
-        RESPONSE_DATA['data'] = [jh_user.to_json()]
-        return JsonResponse(RESPONSE_DATA)
+        res = get_response_data('000000', jh_user.to_json())
+        return JsonResponse(res)
 
     def post(self, request, *args, **kwargs):
         mobile = request.POST.get('mobile')
         if not mobile:
-            RESPONSE_DATA['code'] = '000002'
-            RESPONSE_DATA['msg'] = 'param mobile is required'
-            RESPONSE_DATA['data'] = []
-            return JsonResponse(RESPONSE_DATA)
+            res = get_response_data('000002')
+            return JsonResponse(res)
         try:
             jh_user = Jh_User.objects.get(mobile=mobile)
         except:
-            RESPONSE_DATA['code'] = '000004'
-            RESPONSE_DATA['msg'] = 'account not found'
-            RESPONSE_DATA['data'] = []
-            return JsonResponse(RESPONSE_DATA)
+            res = get_response_data('000004')
+            return JsonResponse(res)
         nickname = request.POST.get('nickname')
         if nickname:
             jh_user.nickname = nickname
@@ -263,7 +218,5 @@ class InfoView(View):
         if email:
             jh_user.email = email
         jh_user.save()
-        RESPONSE_DATA['code'] = '000000'
-        RESPONSE_DATA['msg'] = 'SUCCESS'
-        RESPONSE_DATA['data'] = [jh_user.to_json()]
-        return JsonResponse(RESPONSE_DATA)
+        res = get_response_data('000000', jh_user.to_json())
+        return JsonResponse(res)
