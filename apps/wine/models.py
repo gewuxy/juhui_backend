@@ -30,6 +30,7 @@ class WineInfo(models.Model):
         return d
 
 
+"""
 class WineTradeOrder(models.Model):
     '''
     红酒交易订单
@@ -41,5 +42,47 @@ class WineTradeOrder(models.Model):
     trade_price = models.FloatField(verbose_name='交易价格')
     trade_status = models.IntegerField(
         verbose_name='交易状态', default=1, choices=[(0, '交易完成'), (1, '待交易')])
-    commissioned_at = models.DateTimeField(auto_now_add=True, verbose_name='委托时间')
+    commissioned_at = models.DateTimeField(
+        auto_now_add=True, verbose_name='委托时间')
     trade_at = models.DateTimeField(auto_now=True, verbose_name='交易时间')
+"""
+
+
+class Commission(models.Model):
+    '''
+    委托表
+    '''
+    wine = models.ForeignKey(WineInfo)
+    trade_direction = models.IntegerField(
+        verbose_name='买卖方向', default=1, choices=[(0, '买入'), (1, '卖出')])
+    price = models.FloatField(verbose_name='委托价')
+    num = models.IntegerField(verbose_name='委托数量', default=1)
+    user = models.ForeignKey(Jh_User)
+    status = models.IntegerField(verbose_name='状态', default=0, choices=[
+        (0, '可撤'), (1, '已撤单'), (2, '已成交'), (3, '取消')])
+    create_at = models.DateTimeField(auto_now_add=True, verbose_name='委托时间')
+    update_at = models.DateTimeField(auto_now=True, verbose_name='修改时间')
+
+
+class Deal(models.Model):
+    '''
+    成交表
+    '''
+    wine = models.ForeignKey(WineInfo)
+    buyer = models.ForeignKey(Jh_User, related_name='buyer')
+    seller = models.ForeignKey(Jh_User, related_name='seller')
+    price = models.FloatField(verbose_name='成交价')
+    num = models.IntegerField(verbose_name='成交数量', default=1)
+    create_at = models.DateTimeField(auto_now_add=True, verbose_name='成交时间')
+
+
+class Position(models.Model):
+    '''
+    持仓表
+    '''
+    wine = models.ForeignKey(WineInfo)
+    user = models.ForeignKey(Jh_User)
+    price = models.FloatField(verbose_name='开仓价')
+    num = models.IntegerField(verbose_name='持仓量', default=1)
+    user = models.ForeignKey(Jh_User)
+    create_at = models.DateTimeField(auto_now_add=True, verbose_name='创建时间')
