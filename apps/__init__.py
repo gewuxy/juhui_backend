@@ -1,5 +1,8 @@
 # encoding: utf8
 from django.http import JsonResponse
+import logging
+
+_logger = logging.getLogger('apps-init')
 
 RESPONSE_DATA = {
     'code': '000000',
@@ -17,7 +20,7 @@ ERROR_MSG = {
     '000006': '账号或密码错误',
     '000007': '请先登录',
     '000008': '无效用户',
-    '000009': '已选择'
+    '100001': '已添加'
 }
 
 
@@ -43,7 +46,9 @@ class Middleware(object):
                 {'code': '000007',
                  'msg': ERROR_MSG['000007'],
                  'data': {}})
+        _logger.info('current user is {0}'.format(request.user.username))
 
 
 def index(request):
-    return JsonResponse({'code': '000000', 'msg': 'This is the testPage.', 'data': {}})
+    return JsonResponse(
+        {'code': '000000', 'msg': 'This is the testPage.', 'data': {}})
