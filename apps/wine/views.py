@@ -274,3 +274,84 @@ def sell(request):
         commission_order.status = 2
     commission_order.save()
     return JsonResponse(get_response_data('000000'))
+
+
+def buy(request):
+    wine_code = request.POST.get('code')
+    price = request.POST.get('price')
+    num = request.POST.get('num')
+    if wine_code and price and num:
+        try:
+            wine = WineInfo.objects.get(code=wine_code)
+            price = float(price)
+            num = int(num)
+        except Exception as e:
+            _logger.info('error msg is {0}'.format(e))
+            return JsonResponse(get_response_data('000002'))
+    else:
+        return JsonResponse(get_response_data('000002'))
+
+    jh_user = Jh_User.objects.get(user=request.user)
+    '''
+    是否需要考虑账户资金情况，待补充
+    '''
+    # 生成委托单
+    commission_order = Commission(
+        wine=wine,
+        trade_direction=0,
+        price=price,
+        num=num,
+        user=jh_user,
+        status=0
+    )
+    commission_order.save()
+
+    # 查询卖出委托单，检测该买入委托单可否成交
+    other_comm_orders = Commission.objects.filter(
+        wine=wine,
+        trade_direction=1,
+        status=0,
+        price__lte=price
+    ).order_by('create_at')
+    if not other_comm_orders:
+        return JsonResponse(get_response_data('000000'))
+    for order in other_comm_orders:
+        if num <= 0:
+            break
+        if order.num <= num:
+            order.status = 2  # 将该委托置为成交状态
+            order.save()
+            deal = Deal(  # 生成成交记录
+                wine=wine,
+                seller=order.user,
+                buyer=jh_user,
+                price=order.price,
+                num=order.num
+            )
+            deal.save()
+            '''
+            成交后修改资产变动，待插入
+            '''
+            num = num - order.num
+        else:
+            order.num = order.num - num
+            order.save()
+            deal = Deal(  # 生成成交记录
+                wine=wine,
+                seller=order.user,
+                buyer=jh_user,
+                price=order.price,
+                num=num
+            )
+            deal.save()
+            '''
+            成交后修改资产变动，待插入
+            '''
+            num = 0
+            break
+    if num > 0:
+        commission_order.num = num
+    else:
+        commission_order.status = 2
+    commission_order.save()
+    return JsonResponse(get_response_data('000000'))
