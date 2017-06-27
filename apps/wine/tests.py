@@ -6,10 +6,10 @@ from apps import get_response_data
 
 
 def insert_wine(request):
-    for i in range(20):
+    for i in range(30):
         name = '正牌木桐干红{0}'.format(random.randint(1900, 2000))
         code = '{0}'.format(random.randint(100000, 999999))
-        winery = '{0}号庄园'.format(random.randint(1, 20))
+        winery = '{0}号庄园'.format(random.randint(20, 50))
         proposed_price = float(random.randint(10000, 99999))
         wine = WineInfo(name=name, code=code, winery=winery,
                         proposed_price=proposed_price)

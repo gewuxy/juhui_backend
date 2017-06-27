@@ -6,7 +6,8 @@
 from __future__ import absolute_import, unicode_literals
 import environ
 
-ROOT_DIR = environ.Path(__file__) - 3  # (juhui/config/settings/common.py - 3 = cpic-easySearch/)
+ROOT_DIR = environ.Path(__file__) - 3
+# (juhui/config/settings/common.py - 3 = cpic-easySearch/)
 APPS_DIR = ROOT_DIR.path('apps')
 
 # 从 .env 文件中读取相关的环境配置信息
@@ -106,3 +107,7 @@ DATETIME_FORMAT = '%Y-%m-%d %H:%M:%S'
 ALIDAYU_KEY = '24470660'
 ALIDAYU_SECRET = '7b0967b1d2f3b7159808170721d137ff'
 CODE_EXPIRE = 90
+
+# 微信
+APP_ID = 'wx53502d888764b329'
+APP_SECRET = '018d5c10649a2eae7356013549f9fab1'

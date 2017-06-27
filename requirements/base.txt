@@ -4,3 +4,4 @@ django-crontab==0.7.1
 PyMySQL==0.7.11
 redis==2.10.5
 djangorestframework==3.6.3
+python-weixin==0.2.0

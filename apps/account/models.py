@@ -19,7 +19,8 @@ class Jh_User(models.Model):
     '''
     用户信息表
     '''
-    union_id = models.CharField(max_length=16, verbose_name='用户union_id', null=True)
+    union_id = models.CharField(
+        max_length=16, verbose_name='用户union_id', null=True)
     user = models.ForeignKey(User)
     nickname = models.CharField(max_length=40, verbose_name='昵称', null=True)
     mobile = models.CharField(max_length=12, verbose_name='手机号码', default='')
@@ -31,8 +32,11 @@ class Jh_User(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     is_delete = models.BooleanField(default=False, verbose_name='是否无效用户')
-    trade_passwd = models.CharField(max_length=16, verbose_name='交易密码', default='')
-    personal_select = models.CharField(max_length=500, verbose_name='自选', default='')
+    funds = models.FloatField(default=0, verbose_name='资金')
+    trade_passwd = models.CharField(
+        max_length=64, verbose_name='交易密码', default='')
+    personal_select = models.CharField(
+        max_length=500, verbose_name='自选', default='')
 
     class Meta:
         db_table = 'account_jh_user'

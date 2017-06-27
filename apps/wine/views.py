@@ -68,17 +68,29 @@ def search_wine(request):
     except Exception as e:
         _logger.info('error msg is {0}'.format(e))
         return JsonResponse(get_response_data('000002'))
+    jh_user = Jh_User.objects.get(user=request.user)
+    select_codes = jh_user.personal_select.split(';')
     data = []
     start = (page - 1) * page_num
     end = page * page_num
     if not key:
         wine_info = WineInfo.objects.all()[start:end]
         for wine in wine_info:
-            data.append(wine.to_json())
+            wine_json = wine.to_json()
+            if wine.code in select_codes:
+                wine_json['is_select'] = True
+            else:
+                wine_json['is_select'] = False
+            data.append(wine_json)
     else:
         wine_info = WineInfo.objects.filter(name__contains=key)[start:end]
         for wine in wine_info:
-            data.append(wine.to_json())
+            wine_json = wine.to_json()
+            if wine.code in select_codes:
+                wine_json['is_select'] = True
+            else:
+                wine_json['is_select'] = False
+            data.append(wine_json)
     res = get_response_data('000000', data)
     return JsonResponse(res)
 

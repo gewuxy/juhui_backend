@@ -84,5 +84,4 @@ class Position(models.Model):
     user = models.ForeignKey(Jh_User)
     price = models.FloatField(verbose_name='开仓价')
     num = models.IntegerField(verbose_name='持仓量', default=1)
-    user = models.ForeignKey(Jh_User)
     create_at = models.DateTimeField(auto_now_add=True, verbose_name='创建时间')
