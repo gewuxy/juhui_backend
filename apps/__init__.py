@@ -42,12 +42,11 @@ class Middleware(object):
             return
         if not (request.GET.get('token') or request.POST.get('token')):
             return JsonResponse(get_response_data('000002'))
+
         if not request.user.is_authenticated:
-            return JsonResponse(
-                {'code': '000007',
-                 'msg': ERROR_MSG['000007'],
-                 'data': {}})
-        _logger.info('current user is {0}'.format(request.user.username))
+            return JsonResponse(get_response_data('000007'))
+        _logger.info('current user is {0}'.format(
+            request.user.username))
 
 
 def index(request):

@@ -9,6 +9,25 @@ import logging
 _logger = logging.getLogger('wineinfo')
 OPTINOAL_PAGE = 1  # 自选列表默认页码
 OPTINOAL_PAGE_NUM = 10  # 自选列表默认页长
+MAX_PAGE_NUM = 100
+
+
+def get_wine_list(codes_str, start=0, end=MAX_PAGE_NUM):
+    codes_list = codes_str.split(';')
+    data = []
+    sort_no = start
+    for wine_code in codes_list[start:end]:
+        try:
+            wine = WineInfo.objects.get(code=wine_code, is_delete=False)
+        except Exception as e:
+            _logger.info('wine {0} not found'.format(wine_code))
+            continue
+        wine_json = wine.to_json()
+        wine_json['quote_change'] = '0.00%'  # 待后续补充计算方法
+        wine_json['sort_no'] = sort_no
+        data.append(wine_json)
+        sort_no += 1
+    return data
 
 
 def set_optional(request):
@@ -47,6 +66,7 @@ def get_optional(request):
     data = []
     start = (page - 1) * page_num
     end = page * page_num
+    sort_no = start
     for wine_code in options[start:end]:
         try:
             wine = WineInfo.objects.get(code=wine_code, is_delete=False)
@@ -55,7 +75,9 @@ def get_optional(request):
             continue
         wine_json = wine.to_json()
         wine_json['quote_change'] = '0.00%'  # 待后续补充计算方法
+        wine_json['sort_no'] = sort_no
         data.append(wine_json)
+        sort_no += 1
     res = get_response_data('000000', data)
     return JsonResponse(res)
 
@@ -120,6 +142,54 @@ def del_optional(request):
     jh_user.save()
     res = get_response_data('000000', data)
     return JsonResponse(res)
+
+
+def sort_optional(request):
+    sort_type = request.POST.get('sort_type', '1')
+    page = request.POST.get('page', str(OPTINOAL_PAGE))
+    page_num = request.POST.get('page_num', str(OPTINOAL_PAGE_NUM))
+    if not (page.isdigit() and page_num.isdigit()):
+        return JsonResponse(get_response_data('000002'))
+    page = int(page)
+    page_num = int(page_num)
+    jh_user = Jh_User.objects.get(user=request.user)
+    personal_select = jh_user.personal_select
+    if sort_type == '1':  # 移动单个选项
+        wine_code = request.POST.get('code', '')
+        sort_no = request.POST.get('sort_no', '')
+        if wine_code and sort_no.isdigit():
+            sort_no = int(sort_no)
+            personal_select_list = personal_select.split(';')
+            if (sort_no >= len(personal_select_list)) or (
+                    wine_code not in personal_select_list):  # 移到末尾
+                tmp = ';'.join(personal_select.split(wine_code + ';'))
+                jh_user.personal_select = tmp + ';' + wine_code
+                jh_user.save()
+            else:
+                origin_no = personal_select_list.index(wine_code)
+                if origin_no < sort_no:  # 往后移
+                    for i in range(origin_no, sort_no):
+                        personal_select_list[i] = personal_select_list[i + 1]
+                else:  # 往前移
+                    for j in range(origin_no, sort_no, -1):
+                        personal_select_list[j] = personal_select_list[j - 1]
+                personal_select_list[sort_no] = wine_code
+                jh_user.personal_select = ';'.join(personal_select_list)
+                jh_user.save()
+            data = get_wine_list(
+                jh_user.personal_select,
+                (page - 1) * page_num,
+                page * page_num)
+            return JsonResponse(get_response_data('000000', data))
+        else:
+            return JsonResponse(get_response_data('000002'))
+    else:  # 全局排序
+        sort_codes = request.POST.get('sort_codes')
+        if not sort_codes:
+            return JsonResponse(get_response_data('000002'))
+        data = get_wine_list(
+            sort_codes, (page - 1) * page_num, page * page_num)
+        return JsonResponse(get_response_data('000000', data))
 
 
 def sell(request):

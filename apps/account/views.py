@@ -45,7 +45,7 @@ def register(request):
     user = User.objects.create_user(
         username=body['mobile'],
         password=body['password']
-        )
+    )
     user.save()
     jh_user = Jh_User(
         user=user,
@@ -66,7 +66,7 @@ def login(request):
         return JsonResponse(res)
     try:
         u = User.objects.get(username=body['mobile'])
-    except:
+    except Exception:
         res = get_response_data('000004')
         return JsonResponse(res)
     user = auth.authenticate(username=u.username, password=body['password'])
@@ -142,7 +142,6 @@ def _SendSms(extend, sms_type, sign, param, num, template):
 
 
 def send_sms(request):
-
     '''
     发送验证码短信(阿里大于)
     '''
@@ -166,10 +165,11 @@ def send_sms(request):
         param_dict = json.loads(param)
         param_code = param_dict['code']
         param_expire = int(param_dict['time'])
-    except:
+    except Exception:
         res = get_response_data('000005')
         return JsonResponse(res)
-    redis_client = redis.StrictRedis(host=REDIS['HOST'], port=REDIS['PORT'], db=1)
+    redis_client = redis.StrictRedis(
+        host=REDIS['HOST'], port=REDIS['PORT'], db=1)
     redis_key = 'juhui_sms_code_' + mobile
     redis_client.set(redis_key, param_code)
     redis_client.expire(redis_key, param_expire)
@@ -185,27 +185,31 @@ def send_sms(request):
 class InfoView(View):
 
     def get(self, request, *args, **kwargs):
+        '''
         mobile = request.GET.get('mobile')
         if not mobile:
             res = get_response_data('000002')
             return JsonResponse(res)
+        '''
         try:
-            jh_user = Jh_User.objects.get(mobile=mobile)
-        except:
+            jh_user = Jh_User.objects.get(user=request.user)
+        except Exception:
             res = get_response_data('000004')
             return JsonResponse(res)
-        _logger.info('account {0} info: {1}'.format(mobile, jh_user.to_json()))
+        _logger.info('account info: {0}'.format(jh_user.to_json()))
         res = get_response_data('000000', jh_user.to_json())
         return JsonResponse(res)
 
     def post(self, request, *args, **kwargs):
+        '''
         mobile = request.POST.get('mobile')
         if not mobile:
             res = get_response_data('000002')
             return JsonResponse(res)
+        '''
         try:
-            jh_user = Jh_User.objects.get(mobile=mobile)
-        except:
+            jh_user = Jh_User.objects.get(user=request.user)
+        except Exception:
             res = get_response_data('000004')
             return JsonResponse(res)
         nickname = request.POST.get('nickname')

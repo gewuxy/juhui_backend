@@ -5,6 +5,7 @@ from apps.wine.views import (
     set_optional,
     del_optional,
     search_wine,
+    sort_optional,
     sell
 )
 from apps.wine.tests import insert_wine
@@ -15,6 +16,7 @@ urlpatterns = [
     url(r'^setopt/$', set_optional, name='set_optional'),
     url(r'^delopt/$', del_optional, name='del_optional'),
     url(r'^search/$', search_wine, name='search_wine'),
+    url(r'^sortopt/$', sort_optional, name='sort_optional'),
     url(r'^sell/$', sell, name='sell'),
     url(r'^test/$', insert_wine, name='test_insert_wine')
 ]
