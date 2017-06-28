@@ -1,9 +1,6 @@
 # -*- coding: utf8 -*-
 from django.http import JsonResponse
 from django.contrib.auth.models import User
-from rest_framework.authtoken.models import Token
-from django.contrib import auth
-from django.views.generic import View
 import json
 import random
 
@@ -15,6 +12,12 @@ from config.settings.common import ALIDAYU_KEY, ALIDAYU_SECRET, CODE_EXPIRE
 from config.settings.common import REDIS
 
 import redis
+import requests
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.views import APIView
+from rest_framework.decorators import api_view, permission_classes
+from oauth2_provider.models import AccessToken, RefreshToken
 
 _logger = logging.getLogger('userinfo')
 
@@ -27,21 +30,42 @@ def is_valid(body, params_list):
     return True, body
 
 
+def check_sms_code(mobile, code):
+    redis_client = redis.StrictRedis(
+        host=REDIS['HOST'], port=REDIS['PORT'], db=1)
+    code_in_redis = redis_client.get('juhui_sms_code_' + mobile)
+    if code_in_redis.decode('utf8') != code:
+        return False
+    else:
+        return True
+
+
+def get_access_token(url, username, password, client_id, client_secret):
+    data = {
+        'username': username,
+        'password': password,
+        'grant_type': 'password',
+        'client_id': client_id,
+        'client_secret': client_secret
+    }
+    r = requests.post(url=url, data=data)
+    return r.json()
+
+
 def register(request):
     '''
     用户注册
     '''
     is_check, body = is_valid(request.POST, ['mobile', 'password', 'code'])
-    # 验证码校验 start...
-    # code
-    # 验证码校验 end
     if not is_check:
-        res = get_response_data('000002')
-        return JsonResponse(res)
+        return JsonResponse(get_response_data('000002'))
+    # 验证码校验 start...
+    if not check_sms_code(body['mobile'], body['code']):
+        return JsonResponse(get_response_data('000009'))
+    # 验证码校验 end
     users = User.objects.filter(username=body['mobile'])
     if len(users) > 0:
-        res = get_response_data('000003')
-        return JsonResponse(res)
+        return JsonResponse(get_response_data('000003'))
     user = User.objects.create_user(
         username=body['mobile'],
         password=body['password']
@@ -52,37 +76,36 @@ def register(request):
         mobile=body['mobile'],
     )
     jh_user.save()
-    res = get_response_data('000000')
-    return JsonResponse(res)
+    return JsonResponse(get_response_data('000000'))
 
 
 def login(request):
     """
     登录
     """
-    is_check, body = is_valid(request.POST, ['mobile', 'password'])
+    is_check, body = is_valid(
+        request.POST, ['mobile', 'password', 'client_id', 'client_secret'])
     if not is_check:
-        res = get_response_data('000002')
-        return JsonResponse(res)
+        return JsonResponse(get_response_data('000002'))
     try:
-        u = User.objects.get(username=body['mobile'])
+        oauth2_info = get_access_token(
+            request.build_absolute_uri('/o/token/'), body['mobile'],
+            body['password'], body['client_id'], body['client_secret'])
     except Exception:
-        res = get_response_data('000004')
-        return JsonResponse(res)
-    user = auth.authenticate(username=u.username, password=body['password'])
-    if user is not None:
-        if user.is_active:
-            auth.login(request, user)
-            token, is_created = Token.objects.get_or_create(user=user)
-            jh_user = Jh_User.objects.get(mobile=user.username)
-            jh_user_json = jh_user.to_json()
-            jh_user_json['token'] = token.key
-            res = get_response_data('000000', jh_user_json)
+        return JsonResponse(get_access_token('000010'))
+    if oauth2_info.get('error'):
+        if oauth2_info.get('error') == 'invalid_client':
+            return JsonResponse(get_response_data('000011'))
         else:
-            res = get_response_data('000008')
-    else:
-        res = get_response_data('000006')
-    return JsonResponse(res)
+            return JsonResponse(get_response_data('000006'))
+    token = oauth2_info.get('access_token')
+    if not token:
+        return JsonResponse(get_response_data('000010'))
+    jh_user = Jh_User.objects.get(mobile=body['mobile'])
+    jh_user_json = jh_user.to_json()
+    jh_user_json['token'] = token
+    _logger.info('login info: {0}'.format(jh_user_json))
+    return JsonResponse(get_response_data('000000', jh_user_json))
 
 
 def resetpassword(request):
@@ -90,12 +113,13 @@ def resetpassword(request):
     重置密码
     '''
     is_check, body = is_valid(request.POST, ['mobile', 'password', 'code'])
-    # 验证码校验 start...
-    # code
-    # 验证码校验 end
     if not is_check:
         res = get_response_data('000002')
         return JsonResponse(res)
+    # 验证码校验 start...
+    if not check_sms_code(body['mobile'], body['code']):
+        return JsonResponse(get_response_data('000009'))
+    # 验证码校验 end
     users = User.objects.filter(username=body['mobile'])
     if len(users) > 0:
         user = users[0]
@@ -108,11 +132,19 @@ def resetpassword(request):
         return JsonResponse(res)
 
 
+@api_view(['GET'])
+@permission_classes((IsAuthenticated, ))
 def logout(request):
     '''
     退出登录
     '''
-    auth.logout(request)
+    _logger.info('logout access_token is {0}'.format(
+        request.META.get('HTTP_AUTHORIZATION')))
+    token = request.META.get('HTTP_AUTHORIZATION').split('Bearer ')[1]
+    access_token = AccessToken.objects.get(token=token)
+    refresh_token = RefreshToken.objects.get(access_token_id=access_token.id)
+    refresh_token.delete()
+    access_token.delete()
     res = get_response_data('000000')
     return JsonResponse(res)
 
@@ -182,15 +214,10 @@ def send_sms(request):
     return JsonResponse(res)
 
 
-class InfoView(View):
+class InfoView(APIView):
+    permission_classes = (IsAuthenticated,)
 
     def get(self, request, *args, **kwargs):
-        '''
-        mobile = request.GET.get('mobile')
-        if not mobile:
-            res = get_response_data('000002')
-            return JsonResponse(res)
-        '''
         try:
             jh_user = Jh_User.objects.get(user=request.user)
         except Exception:
@@ -198,15 +225,9 @@ class InfoView(View):
             return JsonResponse(res)
         _logger.info('account info: {0}'.format(jh_user.to_json()))
         res = get_response_data('000000', jh_user.to_json())
-        return JsonResponse(res)
+        return Response(res)
 
     def post(self, request, *args, **kwargs):
-        '''
-        mobile = request.POST.get('mobile')
-        if not mobile:
-            res = get_response_data('000002')
-            return JsonResponse(res)
-        '''
         try:
             jh_user = Jh_User.objects.get(user=request.user)
         except Exception:

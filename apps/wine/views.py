@@ -6,6 +6,9 @@ from apps.wine.models import Commission, Deal, Position
 from apps import get_response_data
 import logging
 
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+
 _logger = logging.getLogger('wineinfo')
 OPTINOAL_PAGE = 1  # 自选列表默认页码
 OPTINOAL_PAGE_NUM = 10  # 自选列表默认页长
@@ -30,6 +33,8 @@ def get_wine_list(codes_str, start=0, end=MAX_PAGE_NUM):
     return data
 
 
+@api_view(['POST'])
+@permission_classes((IsAuthenticated, ))
 def set_optional(request):
     wine_code = request.POST.get('code')
     if not wine_code:
@@ -53,6 +58,8 @@ def set_optional(request):
     return JsonResponse(res)
 
 
+@api_view(['GET'])
+@permission_classes((IsAuthenticated, ))
 def get_optional(request):
     jh_user = Jh_User.objects.get(user=request.user)
     personal_select = jh_user.personal_select
@@ -82,6 +89,8 @@ def get_optional(request):
     return JsonResponse(res)
 
 
+@api_view(['POST'])
+@permission_classes((IsAuthenticated, ))
 def search_wine(request):
     key = request.POST.get('key')
     try:
@@ -117,6 +126,8 @@ def search_wine(request):
     return JsonResponse(res)
 
 
+@api_view(['POST'])
+@permission_classes((IsAuthenticated, ))
 def del_optional(request):
     codes = request.POST.get('code')
     if not codes:
@@ -144,6 +155,8 @@ def del_optional(request):
     return JsonResponse(res)
 
 
+@api_view(['POST'])
+@permission_classes((IsAuthenticated, ))
 def sort_optional(request):
     sort_type = request.POST.get('sort_type', '1')
     page = request.POST.get('page', str(OPTINOAL_PAGE))
@@ -192,6 +205,8 @@ def sort_optional(request):
         return JsonResponse(get_response_data('000000', data))
 
 
+@api_view(['POST'])
+@permission_classes((IsAuthenticated, ))
 def sell(request):
     wine_code = request.POST.get('code')
     price = request.POST.get('price')
@@ -276,6 +291,8 @@ def sell(request):
     return JsonResponse(get_response_data('000000'))
 
 
+@api_view(['POST'])
+@permission_classes((IsAuthenticated, ))
 def buy(request):
     wine_code = request.POST.get('code')
     price = request.POST.get('price')
