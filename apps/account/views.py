@@ -94,7 +94,7 @@ def login(request):
             request.build_absolute_uri('/o/token/'), body['mobile'],
             body['password'], body['client_id'], body['client_secret'])
     except Exception:
-        return JsonResponse(get_access_token('000010'))
+        return JsonResponse(get_response_data('000010'))
     if oauth2_info.get('error'):
         if oauth2_info.get('error') == 'invalid_client':
             return JsonResponse(get_response_data('000011'))
