@@ -26,4 +26,4 @@ class Oauth2Middleware(object):
                 print('========认证其它错误========')
                 return JsonResponse(get_response_data('000007'))
         else:
-            return JsonResponse(get_response_data('000000', r))
+            return JsonResponse(r)
