@@ -34,6 +34,8 @@ def check_sms_code(mobile, code):
     redis_client = redis.StrictRedis(
         host=REDIS['HOST'], port=REDIS['PORT'], db=1)
     code_in_redis = redis_client.get('juhui_sms_code_' + mobile)
+    if code_in_redis is None:
+        return False
     if code_in_redis.decode('utf8') != code:
         return False
     else:
