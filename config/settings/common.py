@@ -66,6 +66,7 @@ AUTHENTICATION_BACKENDS = (
 '''
 # ------------------------------------------------------------------------------
 MIDDLEWARE_CLASSES = (
+    'apps.account.middleware.Oauth2Middleware',
     'django.middleware.security.SecurityMiddleware',
     # 'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -73,7 +74,6 @@ MIDDLEWARE_CLASSES = (
     # 'django.contrib.auth.middleware.AuthenticationMiddleware',
     # 'django.contrib.messages.middleware.MessageMiddleware',
     # 'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    # 'apps.Middleware'
 )
 DEBUG = env.bool('DJANGO_DEBUG', True)
 # ALLOWED_HOSTS = env('DJANGO_ALLOWED_HOSTS', default='[*]')
