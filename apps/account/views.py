@@ -3,6 +3,7 @@ from django.http import JsonResponse
 from django.contrib.auth.models import User
 import json
 import random
+import time
 
 from apps import get_response_data
 from apps.account.models import Jh_User
@@ -12,7 +13,6 @@ from config.settings.common import ALIDAYU_KEY, ALIDAYU_SECRET, CODE_EXPIRE
 from config.settings.common import REDIS
 
 import redis
-import requests
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -20,6 +20,7 @@ from rest_framework.decorators import api_view, permission_classes
 from oauth2_provider.models import AccessToken, RefreshToken
 
 _logger = logging.getLogger('userinfo')
+TIMEOUT = 5
 
 
 def is_valid(body, params_list):
@@ -44,14 +45,27 @@ def check_sms_code(mobile, code):
 
 def get_access_token(url, username, password, client_id, client_secret):
     data = {
+        'url': url,
         'username': username,
         'password': password,
-        'grant_type': 'password',
         'client_id': client_id,
         'client_secret': client_secret
     }
-    r = requests.post(url=url, data=data)
-    return r.json()
+    redis_client = redis.StrictRedis(
+        host=REDIS['HOST'], port=REDIS['PORT'], db=1)
+    redis_client.publish('token', data)
+    timeout = TIMEOUT
+    break_time = int(time.time()) + timeout
+    token = {}
+    pre_token = redis_client.get('juhui_access_token_' + username)
+    while True:
+        if int(time.time()) > break_time:
+            break
+        token = redis_client.get('juhui_access_token_' + username)
+        if token != pre_token:
+            token = json.loads(token.decode('utf8').replace('\'', '\"'))
+            break
+    return token
 
 
 def register(request):
