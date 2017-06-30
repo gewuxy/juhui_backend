@@ -65,8 +65,8 @@ def get_optional(request):
     personal_select = jh_user.personal_select
     options = personal_select.split(';')
     try:
-        page = int(request.POST.get('page', OPTINOAL_PAGE))
-        page_num = int(request.POST.get('page_num', OPTINOAL_PAGE_NUM))
+        page = int(request.GET.get('page', OPTINOAL_PAGE))
+        page_num = int(request.GET.get('page_num', OPTINOAL_PAGE_NUM))
     except Exception as e:
         _logger.info('error msg is {0}'.format(e))
         return JsonResponse(get_response_data('000002'))
