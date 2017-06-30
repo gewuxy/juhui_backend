@@ -20,7 +20,7 @@ from rest_framework.decorators import api_view, permission_classes
 from oauth2_provider.models import AccessToken, RefreshToken
 
 _logger = logging.getLogger('userinfo')
-TIMEOUT = 5
+TIMEOUT = 10
 
 
 def is_valid(body, params_list):
@@ -53,15 +53,16 @@ def get_access_token(url, username, password, client_id, client_secret):
     }
     redis_client = redis.StrictRedis(
         host=REDIS['HOST'], port=REDIS['PORT'], db=1)
-    redis_client.publish('token', data)
-    timeout = TIMEOUT
-    break_time = int(time.time()) + timeout
-    token = {}
     pre_token = redis_client.get('juhui_access_token_' + username)
+    redis_client.publish('token', data)
+    break_time = int(time.time()) + TIMEOUT
+    token = {}
+    # pre_token = redis_client.get('juhui_access_token_' + username)
     while True:
-        if int(time.time()) > break_time:
-            break
         token = redis_client.get('juhui_access_token_' + username)
+        if int(time.time()) > break_time:
+            token = json.loads(token.decode('utf8').replace('\'', '\"'))
+            break
         if token != pre_token:
             token = json.loads(token.decode('utf8').replace('\'', '\"'))
             break
