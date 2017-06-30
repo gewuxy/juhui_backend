@@ -9,6 +9,8 @@ import logging
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 
+import datetime
+
 _logger = logging.getLogger('wineinfo')
 OPTINOAL_PAGE = 1  # 自选列表默认页码
 OPTINOAL_PAGE_NUM = 10  # 自选列表默认页长
@@ -372,3 +374,103 @@ def buy(request):
         commission_order.status = 2
     commission_order.save()
     return JsonResponse(get_response_data('000000'))
+
+
+def detail(request):
+    lastest_price = 0  # 最新价
+    highest_price = 0  # 最高价
+    lowest_price = 0  # 最低价
+    turnover_rate = ''  # 换手率
+    ratio = 0.00  # 量比
+    deal_count = 0  # 成交量
+    total_market_value = 0  # 总市值
+    amplitude = ''  # 振幅
+    wine_code = request.POST.get('code')
+    if not wine_code:
+        return JsonResponse(get_response_data('000002'))
+    try:
+        wine = WineInfo.objects.get(code=wine_code)
+    except Exception:
+        _logger.info('wine {0} not found'.format(wine_code))
+        return JsonResponse(get_response_data('000002'))
+
+    # 最新价／最高价／最低价计算
+    deals = Deal.objects.filter(wine=wine).order_by('create_at')
+    for deal in deals:
+        lastest_price = deal.price
+        if deal_count == 0:
+            highest_price = deal.price
+            lowest_price = deal.price
+            deal_count = deal.num
+        else:
+            deal_count += deal.num
+            if highest_price < deal.price:
+                highest_price = deal.price
+            if lowest_price > deal.price:
+                lowest_price = deal.price
+
+    # 换手率计算
+    all_position = Position.objects.all()
+    all_wine_coount = 0
+    for position in all_position:
+        all_wine_coount += position.num
+    if all_wine_coount == 0:
+        turnover_rate = '0.00%'
+    else:
+        turnover_rate = '{:.2f}%'.format(
+            deal_count / all_wine_coount * 100)
+
+    # 总市值计算
+    total_market_value = all_wine_coount * lastest_price
+
+    # 量比计算
+    today = datetime.datetime.now()
+    deals_today = Deal.objects.filter(create_at__date=today.date())
+    deals_today_account = 0
+    today_high_price = 0
+    today_low_price = 0
+    yesterday_last_price = 0
+    for deal in deals_today:
+        if deals_today_account == 0:
+            today_high_price = deal.price
+            today_low_price = deal.price
+        else:
+            if today_high_price < deal.price:
+                today_high_price = deal.price
+            if today_low_price > deal.price:
+                today_low_price = deal.price
+        deals_today_account += deal.num
+    deals_5_days_account = 0
+    end_day = today.replace(hour=0, minute=0, second=0, microsecond=0)
+    start_day = end_day - datetime.timedelta(days=5)
+    deals_5_days = Deal.objects.filter(
+        create_at__gt=start_day, create_at__lt=end_day).order_by('create_at')
+    for deal in deals_5_days:
+        deals_5_days_account += deal.num
+    if deals_5_days_account > 0:
+        yesterday_last_price = deal.price
+    if deals_5_days_account == 0:
+        ratio = 0.00
+    else:
+        ratio = deals_today_account / (
+            deals_5_days_account / 5 / 60 * today.minute)
+        ratio = round(ratio, 2)
+
+    # 振幅计算
+    if yesterday_last_price == 0:
+        amplitude = '0.00%'
+    else:
+        amplitude = '{:.2f}%'.format(
+            (today_high_price - today_low_price) / yesterday_last_price)
+
+    data = {
+        'lastest_price': lastest_price,
+        'highest_price': highest_price,
+        'lowest_price': lowest_price,
+        'turnover_rate': turnover_rate,
+        'ratio': ratio,
+        'deal_count': deal_count,
+        'total_market_value': total_market_value,
+        'amplitude': amplitude
+    }
+    return JsonResponse(get_response_data('000000', data))
