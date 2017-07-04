@@ -12,7 +12,8 @@ from apps.account.tests import (
     create_user,
     distrib_position,
     create_commission_1,
-    create_commission_0
+    create_commission_0,
+    create_deal
 )
 
 
@@ -28,5 +29,6 @@ urlpatterns = [
     url(r'^createcommission1/$', create_commission_1,
         name='create_commission_1'),
     url(r'^createcommission0/$', create_commission_0,
-        name='create_commission_0')
+        name='create_commission_0'),
+    url(r'^createdeal/$', create_deal, name='create_deal')
 ]

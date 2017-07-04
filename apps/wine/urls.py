@@ -10,6 +10,9 @@ from apps.wine.views import (
     buy,
     detail
 )
+from apps.wine.wine_view_lib import (
+    forchart,
+)
 from apps.wine.tests import insert_wine
 
 
@@ -22,5 +25,6 @@ urlpatterns = [
     url(r'^sell/$', sell, name='sell'),
     url(r'^buy/$', buy, name='buy'),
     url(r'^detail/$', detail, name='detail'),
-    url(r'^test/$', insert_wine, name='test_insert_wine')
+    url(r'^test/$', insert_wine, name='test_insert_wine'),
+    url(r'^forchart/$', forchart, name='forchart')
 ]

@@ -232,6 +232,8 @@ def sell(request):
         return JsonResponse(get_response_data('100002'))
     if position.num < num:
         return JsonResponse(get_response_data('100002'))
+    position.num -= num
+    position.save()
     commission_order = Commission(
         wine=wine,
         trade_direction=1,
