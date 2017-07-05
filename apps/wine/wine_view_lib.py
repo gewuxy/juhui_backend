@@ -80,7 +80,7 @@ def forchart(request):
             'timestamp': ''
         }
     }
-    data = []
+    data = {}
     if period == '1m':
         delta = 1
     elif period == '5m':
@@ -108,6 +108,8 @@ def forchart(request):
         timestamp = str(timestamp)
         if not tmp_data.get(timestamp):
             tmp_data[timestamp] = {}
+            tmp_data[timestamp]['open_price'] = deal.price
+            tmp_data[timestamp]['close_price'] = deal.price
             tmp_data[timestamp]['last_price'] = deal.price
             tmp_data[timestamp]['high_price'] = deal.price
             tmp_data[timestamp]['low_price'] = deal.price
@@ -115,14 +117,15 @@ def forchart(request):
             tmp_data[timestamp]['timestamp'] = timestamp
         else:
             tmp_data[timestamp]['num'] += deal.num
+            tmp_data[timestamp]['close_price'] = deal.price
             tmp_data[timestamp]['last_price'] = deal.price
             if tmp_data[timestamp]['high_price'] < deal.price:
                 tmp_data[timestamp]['high_price'] = deal.price
             if tmp_data[timestamp]['low_price'] > deal.price:
                 tmp_data[timestamp]['low_price'] = deal.price
             tmp_data[timestamp]['timestamp'] = timestamp
-        data.append(tmp_data[timestamp])
-    return JsonResponse(get_response_data('000000', data))
+        data[timestamp] = tmp_data[timestamp]
+    return JsonResponse(get_response_data('000000', list(data.values())))
 
 
 def k_line(request):
@@ -152,7 +155,7 @@ def k_line(request):
             'date': ''
         }
     }
-    data = []
+    data = {}
     try:
         now_date = datetime.datetime.fromtimestamp(now).date()
         wine = WineInfo.objects.get(code=wine_code)
@@ -194,6 +197,8 @@ def k_line(request):
                 days=delta_days // delta * delta)
         if not tmp_data.get(date_str):
             tmp_data[date_str] = {}
+            tmp_data[date_str]['open_price'] = deal.price
+            tmp_data[date_str]['close_price'] = deal.price
             tmp_data[date_str]['high_price'] = deal.price
             tmp_data[date_str]['low_price'] = deal.price
             tmp_data[date_str]['deal_count'] = deal.num
@@ -206,6 +211,7 @@ def k_line(request):
 
         else:
             tmp_data[date_str]['deal_count'] += deal.num
+            tmp_data[date_str]['open_price'] = deal.price
             if tmp_data[date_str]['high_price'] < deal.price:
                 tmp_data[date_str]['high_price'] = deal.price
             if tmp_data[date_str]['low_price'] > deal.price:
@@ -216,8 +222,8 @@ def k_line(request):
             else:
                 tmp_data[date_str]['turnover_rate'] = '{:.2f}%'.format(
                     tmp_data[date_str]['deal_count'] / all_wine_coount * 100)
-        data.append(tmp_data[date_str])
-    return JsonResponse(get_response_data('000000', data))
+        data[date_str] = tmp_data[date_str]
+    return JsonResponse(get_response_data('000000', list(data.values())))
 
 
 def quotes(request):
