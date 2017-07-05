@@ -1,5 +1,5 @@
 # -*- coding: utf8 -*-
-from apps.wine.models import Deal
+from apps.wine.models import Deal, WineInfo
 from django.http import JsonResponse
 from apps import get_response_data
 import time
@@ -34,11 +34,14 @@ def forchart(request):
     if period == '1m':
         try:
             now_date = datetime.datetime.fromtimestamp(now).date()
+            wine = WineInfo.objects.get(code=wine_code)
         except Exception:
             return JsonResponse(get_response_data('000002'))
         start_time = int(time.mktime(now_date.timetuple()))
         for deal in Deal.objects.filter(
-                create_at__date=now_date).order_by('create_at'):
+                wine=wine, create_at__date=now_date).order_by('create_at'):
+            print('======price=====')
+            print('{0}'.format(deal.price))
             hour = deal.create_at.hour
             minute = deal.create_at.minute
             timestamp = start_time + 60 * hour + minute
