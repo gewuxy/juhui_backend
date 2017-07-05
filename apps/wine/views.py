@@ -3,6 +3,7 @@ from django.http import JsonResponse
 from apps.account.models import Jh_User
 from apps.wine.models import WineInfo
 from apps.wine.models import Commission, Deal, Position
+from apps.wine.wine_view_lib import up_ratio
 from apps import get_response_data
 import logging
 
@@ -83,7 +84,10 @@ def get_optional(request):
             _logger.info('wine {0} not found'.format(wine_code))
             continue
         wine_json = wine.to_json()
-        wine_json['quote_change'] = '0.00%'  # 待后续补充计算方法
+        last_price, ratio = up_ratio(wine_code)
+        wine_json['quote_change'] = ratio  # 待后续补充计算方法
+        wine_json['last_price'] = last_price
+        wine_json['proposed_price'] = last_price
         wine_json['sort_no'] = sort_no
         data.append(wine_json)
         sort_no += 1
@@ -465,6 +469,40 @@ def detail(request):
         amplitude = '{:.2f}%'.format(
             (today_high_price - today_low_price) / yesterday_last_price)
 
+    # 五档
+    sell_5_level = [(0, 0), (0, 0), (0, 0), (0, 0), (0, 0)]
+    buy_5_level = [(0, 0), (0, 0), (0, 0), (0, 0), (0, 0)]
+    count = 0
+    for comm in Commission.objects.filter(
+            trade_direction=1, status=0).order_by('price'):
+        if count == 5:
+            break
+        if count == 0:
+            sell_5_level[count] = (comm.price, comm.num)
+            count += 1
+        elif comm.price == sell_5_level[count - 1][0]:
+            sell_5_level[count] = (
+                comm.price,
+                comm.num + sell_5_level[count][1])
+        else:
+            sell_5_level[count] = (comm.price, comm.num)
+            count += 1
+    count = 0
+    for comm in Commission.objects.filter(
+            trade_direction=0, status=0).order_by('-price'):
+        if count == 5:
+            break
+        if count == 0:
+            buy_5_level[count] = (comm.price, comm.num)
+            count += 1
+        elif comm.price == buy_5_level[count - 1][0]:
+            buy_5_level[count] = (
+                comm.price,
+                comm.num + buy_5_level[count][1])
+        else:
+            buy_5_level[count] = (comm.price, comm.num)
+            count += 1
+
     data = {
         'lastest_price': lastest_price,
         'highest_price': highest_price,
@@ -473,6 +511,8 @@ def detail(request):
         'ratio': ratio,
         'deal_count': deal_count,
         'total_market_value': total_market_value,
-        'amplitude': amplitude
+        'amplitude': amplitude,
+        'sell_5_level': sell_5_level,
+        'buy_5_level': buy_5_level
     }
     return JsonResponse(get_response_data('000000', data))
