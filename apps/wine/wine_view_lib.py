@@ -118,7 +118,9 @@ def forchart(request):
                 tmp_data[timestamp]['low_price'] = deal.price
             tmp_data[timestamp]['timestamp'] = timestamp
         data[timestamp] = tmp_data[timestamp]
-    return JsonResponse(get_response_data('000000', list(data.values())))
+    data_list = list(data.values())
+    data_list.sort(key=lambda x:x['timestamp'])
+    return JsonResponse(get_response_data('000000', data_list))
 
 
 def k_line(request):
@@ -219,7 +221,9 @@ def k_line(request):
                 tmp_data[date_str]['turnover_rate'] = '{:.2f}%'.format(
                     tmp_data[date_str]['deal_count'] / all_wine_coount * 100)
         data[date_str] = tmp_data[date_str]
-    return JsonResponse(get_response_data('000000', list(data.values())))
+    data_list = list(data.values())
+    data_list.sort(key=lambda x: x['timestamp'])
+    return JsonResponse(get_response_data('000000', data_list))
 
 
 def quotes(request):
