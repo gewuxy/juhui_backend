@@ -458,8 +458,12 @@ def detail(request):
     if deals_5_days_account == 0:
         ratio = 0.00
     else:
-        ratio = deals_today_account / (
-            deals_5_days_account / 5 / 60 * today.minute)
+        if today.minute == 0:
+            ratio = deals_today_account / (
+                deals_5_days_account / 5 / 60)
+        else:
+            ratio = deals_today_account / (
+                deals_5_days_account / 5 / 60 * today.minute)
         ratio = round(ratio, 2)
 
     # 振幅计算
