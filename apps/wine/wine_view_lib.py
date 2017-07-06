@@ -8,7 +8,7 @@ import calendar
 
 
 def up_ratio(code=None):
-    if code:
+    if code:  # 获取该红酒的现价，涨幅
         today = datetime.datetime.now().date()
         yesterday = today - datetime.timedelta(days=1)
         wine = WineInfo.objects.get(code=code)
@@ -26,7 +26,7 @@ def up_ratio(code=None):
             return 0, '0.00%'
         return last_price, '{:.2f}%'.format(
             (last_price - yesterday_price) / yesterday_price * 100)
-    else:
+    else:  # 获取行情数据
         high_ratio_codes = []
         low_ratio_codes = []
         today = datetime.datetime.now().date()
@@ -58,7 +58,7 @@ def up_ratio(code=None):
 
 def forchart(request):
     wine_code = request.POST.get('code')
-    period = request.POST.get('period', '1m')
+    period = request.POST.get('period', '1d')
     now = request.POST.get('now')
     if wine_code is None:
         print('code is None...')
@@ -81,31 +81,24 @@ def forchart(request):
         }
     }
     data = {}
-    if period == '1m':
-        delta = 1
-    elif period == '5m':
+    if period == '5d':
         delta = 5
-    elif period == '15m':
-        delta = 15
-    elif period == '30m':
-        delta = 30
-    elif period == '60m':
-        delta = 60
-
+    else:
+        delta = 1
     try:
-        now_date = datetime.datetime.fromtimestamp(now).date()
+        now = datetime.datetime.fromtimestamp(now)
         wine = WineInfo.objects.get(code=wine_code)
     except Exception:
         return JsonResponse(get_response_data('000002'))
-    start_time = int(time.mktime(now_date.timetuple()))
+    start_datetime = now - datetime.timedelta(days=delta - 1)
+    start_datetime = start_datetime.replace(hour=0, minute=0, second=0, microsecond=0)
     for deal in Deal.objects.filter(
-            wine=wine, create_at__date=now_date).order_by('create_at'):
+            wine=wine,
+            create_at__gte=start_datetime,
+            create_at__lte=now).order_by('create_at'):
         print('======price=====')
         print('{0}'.format(deal.price))
-        hour = deal.create_at.hour
-        minute = deal.create_at.minute
-        timestamp = start_time + 60 * hour + minute // delta * delta
-        timestamp = str(timestamp)
+        timestamp = str(int(time.mktime(deal.create_at.timetuple())))
         if not tmp_data.get(timestamp):
             tmp_data[timestamp] = {}
             tmp_data[timestamp]['open_price'] = deal.price
@@ -157,22 +150,20 @@ def k_line(request):
     }
     data = {}
     try:
-        now_date = datetime.datetime.fromtimestamp(now).date()
+        now = datetime.datetime.fromtimestamp(now)
         wine = WineInfo.objects.get(code=wine_code)
         count = int(count)
     except Exception:
         return JsonResponse(get_response_data('000002'))
-    if period == '5d':
-        delta = 5
-    elif period == '7d':
-        delta = 7
-    elif period == '30d':
-        delta = 30
-    else:
+    try:
+        if period[-1] == 'm':
+            delta = int(period[:-1])
+        elif period[-1] == 'd':
+            delta = 60 * int(period[:-1])
+    except Exception:
         delta = 1
-    start_date = now_date - datetime.timedelta(days=delta * count)
-    start_at = datetime.datetime.combine(start_date, datetime.time.min)
-    end_at = datetime.datetime.combine(now_date, datetime.time.min)
+
+    start_at = now - datetime.timedelta(minutes=delta * count)
     all_position = Position.objects.all()
     all_wine_coount = 0
     for position in all_position:
@@ -180,21 +171,26 @@ def k_line(request):
     for deal in Deal.objects.filter(
             wine=wine,
             create_at__gte=start_at,
-            create_at__lt=end_at).order_by('-create_at'):
+            create_at__lte=now).order_by('-create_at'):
         print('======price=====')
         print('{0}'.format(deal.price))
-        if delta == 30:
+        timestamp = str(int(time.mktime(deal.create_at.timetuple())))
+        if delta == 30 * 60:
             last_day_num = calendar.monthrange(
                 deal.create_at.year, deal.create_at.month)[1]
             create_at = deal.create_at.replace(day=last_day_num)
-            if create_at > end_at:
-                date_str = end_at.strftime('%Y-%m-%d')
+            if create_at > now:
+                # date_str = end_at.strftime('%Y-%m-%d')
+                date_str = str(int(time.mktime(now.timetuple())))
             else:
-                date_str = create_at.strftime('%Y-%m-%d')
+                # date_str = create_at.strftime('%Y-%m-%d')
+                date_str = str(int(time.mktime(create_at.timetuple())))
+
         else:
-            delta_days = (end_at - deal.create_at).days
-            date_str = end_at - datetime.timedelta(
-                days=delta_days // delta * delta)
+            delta_minutes = (now - deal.create_at).seconds // 60
+            create_at = now - datetime.timedelta(
+                days=delta_minutes // delta * delta)
+            date_str = str(int(time.mktime(create_at.timetuple())))
         if not tmp_data.get(date_str):
             tmp_data[date_str] = {}
             tmp_data[date_str]['open_price'] = deal.price
@@ -202,7 +198,7 @@ def k_line(request):
             tmp_data[date_str]['high_price'] = deal.price
             tmp_data[date_str]['low_price'] = deal.price
             tmp_data[date_str]['deal_count'] = deal.num
-            tmp_data[date_str]['date'] = date_str
+            tmp_data[date_str]['timestamp'] = date_str
             if all_wine_coount == 0:
                 tmp_data[date_str]['turnover_rate'] = '0.00%'
             else:
@@ -216,7 +212,7 @@ def k_line(request):
                 tmp_data[date_str]['high_price'] = deal.price
             if tmp_data[date_str]['low_price'] > deal.price:
                 tmp_data[date_str]['low_price'] = deal.price
-            tmp_data[date_str]['date'] = date_str
+            tmp_data[date_str]['timestamp'] = date_str
             if all_wine_coount == 0:
                 tmp_data[date_str]['turnover_rate'] = '0.00%'
             else:
