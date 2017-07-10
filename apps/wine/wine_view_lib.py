@@ -38,7 +38,7 @@ def up_ratio(code=None):
                 continue
             last_price = t_deals[0].price
             y_deals = Deal.objects.filter(
-                wine=wine, create_at__date=yesterday).order_by('-create_at')
+                wine=wine, create_at__lte=yesterday).order_by('-create_at')
             if y_deals.count() == 0:
                 continue
             yesterday_price = y_deals[0].price
