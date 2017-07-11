@@ -49,5 +49,7 @@ urlpatterns = [
     url(r'^admin/', include(admin.site.urls)),
     url(r'^o/', include('oauth2_provider.urls', namespace='oauth2_provider')),
     url(r'^api/account/', include('apps.account.urls', namespace='account')),
-    url(r'^api/wine/', include('apps.wine.urls', namespace='wine'))
+    url(r'^api/wine/', include('apps.wine.urls', namespace='wine')),
+    url(r'^api/chat/', include('apps.chat.urls', namespace='chat'))
+
 ]

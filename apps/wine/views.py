@@ -87,7 +87,7 @@ def get_optional(request):
         last_price, ratio = up_ratio(wine_code)
         wine_json['quote_change'] = ratio  # 待后续补充计算方法
         wine_json['last_price'] = last_price
-        wine_json['proposed_price'] = last_price
+        # wine_json['proposed_price'] = last_price
         wine_json['sort_no'] = sort_no
         data.append(wine_json)
         sort_no += 1
