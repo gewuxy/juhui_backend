@@ -1,6 +1,7 @@
 from django.http import JsonResponse
 from apps.chat.models import Comment
 from apps.wine.models import WineInfo
+from apps.account.models import Jh_User
 from apps import get_response_data
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
@@ -41,6 +42,32 @@ def get_comment(request):
         tmp_comment['create_at'] = comment.create_at
         data.append(tmp_comment)
     return JsonResponse(get_response_data('000000', data))
+
+
+def save_comment(request):
+    user_id = request.POST.get('user_id')
+    wine_code = request.POST.get('wine_code')
+    msg_type = request.POST.get('msg_type')
+    content = request.POST.get('content')
+    video_img = request.POST.get('video_img', '')
+    create_at = request.POST.get('create_at')
+    if not (user_id and wine_code and msg_type and content and create_at):
+        return JsonResponse(get_response_data('000002'))
+    try:
+        wine = WineInfo.objects.get(code=wine_code)
+        user = Jh_User.objects.get(id=user_id)
+    except Exception:
+        return JsonResponse(get_response_data('000002'))
+    comment = Comment(
+        wine=wine,
+        user=user,
+        content=content,
+        video_img_url=video_img,
+        type=msg_type,
+        create_at=create_at
+    )
+    comment.save()
+    return JsonResponse(get_response_data('000000'))
 
 
 @api_view(['POST'])
