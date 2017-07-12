@@ -4,3 +4,4 @@ __pycache__
 *.rdb
 .idea
 config/settings/local.py
+.DS_Store
