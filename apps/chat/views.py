@@ -2,8 +2,12 @@ from django.http import JsonResponse
 from apps.chat.models import Comment
 from apps.wine.models import WineInfo
 from apps import get_response_data
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
 
 
+@api_view(['GET'])
+@permission_classes((IsAuthenticated, ))
 def get_comment(request):
     wine_code = request.GET.get('code')
     if not wine_code:
