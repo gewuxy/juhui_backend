@@ -10,6 +10,7 @@ class Comment(models.Model):
     wine = models.ForeignKey(WineInfo)
     user = models.ForeignKey(Jh_User)
     content = models.CharField(max_length=255, verbose_name='消息内容', default='')
+    video_img_url = models.CharField(max_length=255, verbose_name='视频截图', default='')
     type = models.IntegerField(verbose_name='状态', default=0, choices=[
         (0, '文本'), (1, '图片'), (2, '语音'), (3, '视频')])
     create_at = models.CharField(max_length=13, verbose_name='时间戳')

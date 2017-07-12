@@ -29,12 +29,14 @@ def get_comment(request):
     data = []
     for comment in comments:
         tmp_comment = {}
+        tmp_comment['user_id'] = comment.user.id
         tmp_comment['mobile'] = comment.user.mobile
-        tmp_comment['img_url'] = comment.user.img_url
+        tmp_comment['user_img_url'] = comment.user.img_url
         tmp_comment['nickname'] = comment.user.nickname
         tmp_comment['wine_name'] = comment.wine.name
         tmp_comment['wine_code'] = comment.wine.code
         tmp_comment['content'] = comment.content
+        tmp_comment['video_img_url'] = comment.video_img_url
         tmp_comment['type'] = comment.type
         tmp_comment['create_at'] = comment.create_at
         data.append(tmp_comment)
