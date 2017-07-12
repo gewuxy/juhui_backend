@@ -71,7 +71,7 @@ def save_comment(request):
 
 
 @api_view(['POST'])
-@permission_classes((IsADirectoryError, ))
+@permission_classes((IsAuthenticated, ))
 def upload(request):
     file = request.FILES.get('file')
     if not file:
