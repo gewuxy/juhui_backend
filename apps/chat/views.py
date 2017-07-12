@@ -83,14 +83,14 @@ def upload(request):
     except Exception:
         return JsonResponse(get_response_data('200002'))
     if file_type in ['jpg', 'JPG', 'JPEG', 'jpeg', 'png', 'PNG']:
-        file_path = ROOT_DIR + 'media/img/' + file_name
-        media_url = request.build_absolute_uri('media/img/' + file_name)
+        file_path = ROOT_DIR + 'media/chat/img/' + file_name
+        media_url = request.build_absolute_uri('/') + 'media/chat/img/' + file_name
     elif file_type in ['mp3', 'MP3', 'amr', 'AMR']:
-        file_path = ROOT_DIR + 'media/voice/' + file_name
-        media_url = request.build_absolute_uri('media/voice/' + file_name)
+        file_path = ROOT_DIR + 'media/chat/voice/' + file_name
+        media_url = request.build_absolute_uri('/') + 'media/chat/voice/' + file_name
     elif file_type in ['mp4', 'MP4']:
-        file_path = ROOT_DIR + 'media/video/' + file_name
-        media_url = request.build_absolute_uri('media/video/' + file_name)
+        file_path = ROOT_DIR + 'media/chat/video/' + file_name
+        media_url = request.build_absolute_uri('/') + 'media/chat/video/' + file_name
     else:
         return JsonResponse(get_response_data('200002'))
     print('file path is {0}'.format(file_path))
