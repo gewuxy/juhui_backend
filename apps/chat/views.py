@@ -6,6 +6,8 @@ from apps import get_response_data
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from config.settings.common import ROOT_DIR
+from apps.chat.chat_view_lib import set_video_img
+import time
 
 
 @api_view(['GET'])
@@ -77,26 +79,35 @@ def upload(request):
     if not file:
         return JsonResponse(get_response_data('200001'))
     file_name = file.name
+    timestamp = str(int(time.time() * 1000))
     print('file name is {0}'.format(file_name))
     try:
         file_type = file_name.split('.')[1]
     except Exception:
         return JsonResponse(get_response_data('200002'))
+    video_img_url = ''
+    root_str= str(ROOT_DIR)
     if file_type in ['jpg', 'JPG', 'JPEG', 'jpeg', 'png', 'PNG']:
-        file_path = ROOT_DIR + 'media/chat/img/' + file_name
-        media_url = request.build_absolute_uri('/') + 'media/chat/img/' + file_name
+        file_path = root_str + '/media/chat/img/' + timestamp + '_' + file_name
+        media_url = request.build_absolute_uri('/') + 'media/chat/img/' + timestamp + '_' + file_name
     elif file_type in ['mp3', 'MP3', 'amr', 'AMR']:
-        file_path = ROOT_DIR + 'media/chat/voice/' + file_name
-        media_url = request.build_absolute_uri('/') + 'media/chat/voice/' + file_name
+        file_path = root_str + '/media/chat/voice/' + timestamp + '_' + file_name
+        media_url = request.build_absolute_uri('/') + 'media/chat/voice/' + timestamp + '_' + file_name
     elif file_type in ['mp4', 'MP4']:
-        file_path = ROOT_DIR + 'media/chat/video/' + file_name
-        media_url = request.build_absolute_uri('/') + 'media/chat/video/' + file_name
+        file_path = root_str + '/media/chat/video/' + timestamp + '_' + file_name
+        media_url = request.build_absolute_uri('/') + 'media/chat/video/' + timestamp + '_' + file_name
+        video_img_path = root_str + '/media/chat/video/' + timestamp + '.jpg'
+        video_img_url = request.build_absolute_uri('/') + 'media/chat/video/' + timestamp + '.jpg'
     else:
         return JsonResponse(get_response_data('200002'))
     print('file path is {0}'.format(file_path))
-    with open(str(file_path), 'wb+') as f:
+    with open(file_path, 'wb+') as f:
         for chunk in file.chunks():
             f.write(chunk)
-    data = {'media_url': media_url}
+    data = {'media_url': media_url, 'media_img_url': ''}
+    if video_img_url:
+        rval = set_video_img(file_path, video_img_path)
+        if rval:
+            data['media_img_url'] = video_img_url
 
     return JsonResponse(get_response_data('000000', data))
