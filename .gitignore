@@ -5,3 +5,4 @@ __pycache__
 .idea
 config/settings/local.py
 .DS_Store
+media

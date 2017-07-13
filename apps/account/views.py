@@ -10,7 +10,7 @@ from apps.account.models import Jh_User
 import logging
 import top  # taobao SDK
 from config.settings.common import ALIDAYU_KEY, ALIDAYU_SECRET, CODE_EXPIRE
-from config.settings.common import REDIS
+from config.settings.common import REDIS, ROOT_DIR
 
 import redis
 from rest_framework.permissions import IsAuthenticated
@@ -262,3 +262,32 @@ class InfoView(APIView):
         jh_user.save()
         res = get_response_data('000000', jh_user.to_json())
         return JsonResponse(res)
+
+
+@api_view(['POST'])
+@permission_classes((IsAuthenticated, ))
+def upload(request):
+    file = request.FILES.get('file')
+    if not file:
+        return JsonResponse(get_response_data('200001'))
+    file_name = file.name
+    timestamp = str(int(time.time() * 1000))
+    print('file name is {0}'.format(file_name))
+    try:
+        file_type = file_name.split('.')[1]
+    except Exception:
+        return JsonResponse(get_response_data('200002'))
+
+    root_str= str(ROOT_DIR)
+    if file_type in ['jpg', 'JPG', 'JPEG', 'jpeg', 'png', 'PNG']:
+        file_path = root_str + '/media/user/img/' + timestamp + '_' + file_name
+        media_url = request.build_absolute_uri('/') + 'media/user/img/' + timestamp + '_' + file_name
+    else:
+        return JsonResponse(get_response_data('200002'))
+    print('file path is {0}'.format(file_path))
+    with open(file_path, 'wb+') as f:
+        for chunk in file.chunks():
+            f.write(chunk)
+    data = {'media_url': media_url}
+
+    return JsonResponse(get_response_data('000000', data))

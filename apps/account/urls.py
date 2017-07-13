@@ -6,7 +6,8 @@ from apps.account.views import (
     login,
     logout,
     resetpassword,
-    InfoView
+    InfoView,
+    upload
 )
 from apps.account.tests import (
     create_user,
@@ -24,6 +25,8 @@ urlpatterns = [
     url(r'^logout/$', logout, name='logout'),
     url(r'^resetpw/$', resetpassword, name='resetpassword'),
     url(r'^info/$', InfoView.as_view(), name='info'),
+    url(r'^upload/$', upload, name='upload'),
+
     url(r'^createuser/$', create_user, name='create_user'),
     url(r'^distribposition/$', distrib_position, name='distrib_position'),
     url(r'^createcommission1/$', create_commission_1,
