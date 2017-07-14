@@ -5,7 +5,10 @@ from apps import get_response_data
 import time
 import datetime
 import calendar
+import logging
+import requests
 
+_logger = logging.getLogger('wine_view_lib')
 
 def up_ratio(code=None):
     if code:  # 获取该红酒的现价，涨幅
@@ -241,3 +244,22 @@ def quotes(request):
         wine_json['ratio'] = '{:.2f}%'.format(low[i][1])
         data['low_ratio'].append(wine_json)
     return JsonResponse(get_response_data('000000', data))
+
+
+def price_emit(code, price, timestamp):
+    url = 'http://39.108.142.204:8001/last_price/?code={0}&price={1}&time={2}'.format(code, price, timestamp)
+    r = requests.get(url)
+    if r.content == '000000':
+        return True
+    else:
+        return False
+
+
+def change_price(code, price):
+    try:
+        wine = WineInfo.objects.get(code=code)
+        wine.proposed_price = float(price)
+        wine.save()
+        return True
+    except Exception:
+        return False

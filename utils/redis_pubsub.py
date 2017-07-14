@@ -46,23 +46,33 @@ def save_chat_msg(user_id, wine_code, msg_type, content, video_img, create_at):
 
 def listen():
     ps = REDIS_CLIENT.pubsub()
-    ps.subscribe(['save_msg'])
+    ps.subscribe(['save_msg', 'last_price'])
     for item in ps.listen():
         print('item is {0}'.format(item))
         if item['type'] == 'message':
             params = item['data']
+            print('item data is {0}'.format(params))
             try:
-                print('item data is {0}'.format(params))
                 params = json.loads(params.decode('utf8').replace('\'', '\"'))
-                save_info = save_chat_msg(
-                    params['user_id'],
-                    params['wine_code'],
-                    params['type'],
-                    params['content'],
-                    params['video_img_url'],
-                    params['create_at']
-                )
-                print('Save chat message is successful? {0}'.format(save_info))
+                if item['channel'].decode('utf8') == 'save_msg':
+                    save_info = save_chat_msg(
+                        params['user_id'],
+                        params['wine_code'],
+                        params['type'],
+                        params['content'],
+                        params['video_img_url'],
+                        params['create_at']
+                    )
+                    print('Save chat message is successful? {0}'.format(save_info))
+                elif item['channel'].decode('utf8') == 'last_price':
+                    save_info = (
+                        params['code'],
+                        params['price'],
+                        params['time']
+                    )
+                    print('last price info is {0}'.format(save_info))
+                else:
+                    pass
             except Exception:
                 pass
 
