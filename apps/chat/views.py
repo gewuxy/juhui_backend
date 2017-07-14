@@ -90,7 +90,7 @@ def upload(request):
     if file_type in ['jpg', 'JPG', 'JPEG', 'jpeg', 'png', 'PNG']:
         file_path = root_str + '/media/chat/img/' + timestamp + '_' + file_name
         media_url = request.build_absolute_uri('/') + 'media/chat/img/' + timestamp + '_' + file_name
-    elif file_type in ['mp3', 'MP3', 'amr', 'AMR']:
+    elif file_type in ['mp3', 'MP3', 'amr', 'AMR', 'aac', 'AAC']:
         file_path = root_str + '/media/chat/voice/' + timestamp + '_' + file_name
         media_url = request.build_absolute_uri('/') + 'media/chat/voice/' + timestamp + '_' + file_name
     elif file_type in ['mp4', 'MP4']:
