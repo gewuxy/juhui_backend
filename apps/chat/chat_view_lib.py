@@ -2,6 +2,7 @@
 import cv2
 import subprocess
 from config.settings.common import FFMPEG_BIN_PATH
+import os
 
 # FFMPEG_BIN_PATH = '/usr/local/bin/ffmpeg'
 
@@ -24,8 +25,7 @@ def set_video_img_1(from_path, to_path):
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE)
     stdout, stderr = process.communicate()
-    if process.returncode != 0:
-        print('[UPLOAD] 制作截图,ret={0}, stderr={1}'.format(process.returncode, stderr))
+    if os.path.exists(to_path):
+        return True
+    else:
         return False
-    print('[UPLOAD] 制作截图,ret={0}, stdout={1}'.format(process.returncode, stdout))
-    return True

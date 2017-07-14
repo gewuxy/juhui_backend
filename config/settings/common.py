@@ -153,4 +153,4 @@ APP_ID = 'wx53502d888764b329'
 APP_SECRET = '018d5c10649a2eae7356013549f9fab1'
 
 # 视频截取
-FFMPEG_BIN_PATH = '／usr/loscal/bin/ffmpeg'
+FFMPEG_BIN_PATH = '/usr/local/bin/ffmpeg'

@@ -6,7 +6,7 @@ from apps import get_response_data
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from config.settings.common import ROOT_DIR
-from apps.chat.chat_view_lib import set_video_img
+from apps.chat.chat_view_lib import set_video_img_1
 import time
 
 
@@ -106,7 +106,7 @@ def upload(request):
             f.write(chunk)
     data = {'media_url': media_url, 'media_img_url': ''}
     if video_img_url:
-        rval = set_video_img(file_path, video_img_path)
+        rval = set_video_img_1(file_path, video_img_path)
         if rval:
             data['media_img_url'] = video_img_url
 
