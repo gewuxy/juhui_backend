@@ -33,7 +33,10 @@ def save_chat_msg(user_id, wine_code, msg_type, content, video_img, create_at):
         'video_img': video_img,
         'create_at': create_at
     }
-    r = requests.post(url=SAVE_MSG_URL, data=data)
+    headers = {
+        'Content-type': 'application/json; charset=utf-8'
+    }
+    r = requests.post(url=SAVE_MSG_URL, data=data, headers=headers)
     try:
         save_info = r.json()
         if save_info['code'] == '000000':
