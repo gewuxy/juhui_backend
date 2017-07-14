@@ -5,12 +5,15 @@ from apps.wine.models import WineInfo
 from apps.wine.models import Commission, Deal, Position
 from apps.wine.wine_view_lib import up_ratio
 from apps import get_response_data
-import logging
+from apps.wine.wine_view_lib import price_emit, change_price
 
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 
 import datetime
+import time
+import logging
+
 
 _logger = logging.getLogger('wineinfo')
 OPTINOAL_PAGE = 1  # 自选列表默认页码
@@ -271,6 +274,19 @@ def sell(request):
                 num=order.num
             )
             deal.save()
+            # 修改WineInfo中的价格proposed_price
+            res_change = change_price(wine.code, order.price)
+            if res_change:
+                _logger.info('修改价格成功！')
+            else:
+                _logger.info('修改价格失败！')
+            # 广播最新价格
+            timestamp = str(int(time.time() * 1000))
+            res_emit = price_emit(wine.code, order.price, timestamp)
+            if res_emit:
+                _logger.info('最新价格广播成功！')
+            else:
+                _logger.info('最新价格广播失败！')
             '''
             成交后修改资产变动，待插入
             '''
@@ -286,6 +302,19 @@ def sell(request):
                 num=num
             )
             deal.save()
+            # 修改WineInfo中的价格proposed_price
+            res_change = change_price(wine.code, order.price)
+            if res_change:
+                _logger.info('修改价格成功！')
+            else:
+                _logger.info('修改价格失败！')
+            # 广播最新价格
+            timestamp = str(int(time.time() * 1000))
+            res = price_emit(wine.code, order.price, timestamp)
+            if res:
+                _logger.info('最新价格广播成功！')
+            else:
+                _logger.info('最新价格广播失败！')
             '''
             成交后修改资产变动，待插入
             '''
@@ -354,6 +383,19 @@ def buy(request):
                 num=order.num
             )
             deal.save()
+            # 修改WineInfo中的价格proposed_price
+            res_change = change_price(wine.code, order.price)
+            if res_change:
+                _logger.info('修改价格成功！')
+            else:
+                _logger.info('修改价格失败！')
+            # 广播最新价格
+            timestamp = str(int(time.time() * 1000))
+            res = price_emit(wine.code, order.price, timestamp)
+            if res:
+                _logger.info('最新价格广播成功！')
+            else:
+                _logger.info('最新价格广播失败！')
             '''
             成交后修改资产变动，待插入
             '''
@@ -369,6 +411,19 @@ def buy(request):
                 num=num
             )
             deal.save()
+            # 修改WineInfo中的价格proposed_price
+            res_change = change_price(wine.code, order.price)
+            if res_change:
+                _logger.info('修改价格成功！')
+            else:
+                _logger.info('修改价格失败！')
+            # 广播最新价格
+            timestamp = str(int(time.time() * 1000))
+            res = price_emit(wine.code, order.price, timestamp)
+            if res:
+                _logger.info('最新价格广播成功！')
+            else:
+                _logger.info('最新价格广播失败！')
             '''
             成交后修改资产变动，待插入
             '''
