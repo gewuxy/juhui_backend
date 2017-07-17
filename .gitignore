@@ -6,3 +6,4 @@ __pycache__
 config/settings/local.py
 .DS_Store
 media
+apps/nodejs/node_modules
