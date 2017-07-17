@@ -9,7 +9,7 @@ from apps import get_response_data
 # Create your tests here.
 
 def create_comment(request):
-    wine = WineInfo.objects.get(code='147108')
+    wine = WineInfo.objects.get(code='227815')
     for user in Jh_User.objects.all():
         timestamp = int(time.time() * 1000)
         comment = Comment(

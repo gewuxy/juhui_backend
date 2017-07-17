@@ -83,8 +83,8 @@ def create_commission_1(request):
         # 登录获取token
         mobile = user.mobile
         password = '12345678'
-        client_id = 'tNLzffNGNVNhUKYgB58edo2pplyUx47ZvgeS6TeS'
-        client_secret = 'SVsdE9ccpgqa9KyONrReeEbu8nql439Dp0ydsMVG0PfevOxw3mS4EZ0PkNBpyuC6aDrBWs1WHWS96yw7Luno8UMfLOJkiKEOKHFxLBCA4p0vHkXxhe5qwLkAL7T5juIr'
+        client_id = 'NEEF9MakoTu9k573c9ExiuMjEp8BZxJ5J0LUk1mr'
+        client_secret = '9zShX4vdI7jggML2rE6TBmrtsXbAdIoBVeGHuDTQ2xdNaVqRLErct9Zh7UgICRkyHE5AkI9iKTwkLsLjPgrveUNSJBK9oPMxONSaxs3vzajeoOUR33YxgZ0ZpPfUAA6t'
         data = {
             'mobile': mobile,
             'password': password,
@@ -121,8 +121,8 @@ def create_commission_0(request):
         # 登录获取token
         mobile = user.mobile
         password = '12345678'
-        client_id = 'tNLzffNGNVNhUKYgB58edo2pplyUx47ZvgeS6TeS'
-        client_secret = 'SVsdE9ccpgqa9KyONrReeEbu8nql439Dp0ydsMVG0PfevOxw3mS4EZ0PkNBpyuC6aDrBWs1WHWS96yw7Luno8UMfLOJkiKEOKHFxLBCA4p0vHkXxhe5qwLkAL7T5juIr'
+        client_id = 'NEEF9MakoTu9k573c9ExiuMjEp8BZxJ5J0LUk1mr'
+        client_secret = '9zShX4vdI7jggML2rE6TBmrtsXbAdIoBVeGHuDTQ2xdNaVqRLErct9Zh7UgICRkyHE5AkI9iKTwkLsLjPgrveUNSJBK9oPMxONSaxs3vzajeoOUR33YxgZ0ZpPfUAA6t'
         data = {
             'mobile': mobile,
             'password': password,

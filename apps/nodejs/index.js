@@ -5,53 +5,45 @@ var https = require('https');
 var redis = require('redis');
 var client = redis.createClient();
 client.select(1, function(){});
+var bodyParser = require('body-parser')
+app.use( bodyParser.json() );       // to support JSON-encoded bodies
+app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
+  extended: true
+}));
 
 var code = ""
 app.get('/', function(req, res){
     //res.sendFile(__dirname + '/index.html');
     code = req.query.code;
     console.log(code);
-    /***
-    var url = 'https://jh.qiuxiaokun.com/api/chat/comment/?count=2&code=' + code
-    var datas = "";
-    https.get(url, (res1) => {
-        console.log('statusCode: ' + res1.statusCode);
-        console.log('headers: ' + res1.headers);
-
-        res1.on('data', (d) => {
-            console.log('data: ' + d + 'url: ' + url);
-            //process.stdout.write(d);
-            global.returnData = d
-        });
-    }).on('error', (e) => {
-       console.error(e);
-   });
-   console.log('====datas===');
-   console.log(global.returnData);
-   res.send(global.returnData);
-   ***/
-   //res.send({});
    res.sendFile(__dirname + '/index.html');
 });
 
-app.get('/last_price/', function(req, res){
-    data = req.query.data;
+app.post('/last_price/', function(req, res){
+    console.log('enter last_price')
+    data = req.body;
     console.log(data);
     io.emit('last_price', data);
     res.send("000000")
 });
  
-/***
-var code = "";
-app.get('/', function(req, res){
-    code = req.query.code;
-    res.send({})
-    //res.sendFile(__dirname + '/index.html');
+app.post('/send_msg/', function(req, res){
+    console.log('enter send_msg');
+    data = req.body;
+    code = data.code;
+    console.log('code: ' + code + 'data: ' + data);
+    io.emit(code, data);
+    res.send({'code': '000000', 'msg': 'SUCCESS', 'data': {}});
 });
-***/
 
 io.on('connection', function(socket){
-    console.log('a user connected');
+    code = socket.handshake.query.code
+    console.log('query' + code)
+    if (code === undefined) {
+        console.log('非法请求');
+        return;
+    }
+    console.log('a user connected' + '===' + code + '===');
     socket.on(code, function(msg){
         io.emit(code, msg);
         //client.set('nodejs_test', msg, redis.print)

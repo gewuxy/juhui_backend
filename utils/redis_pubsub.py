@@ -3,6 +3,7 @@ import redis
 import requests
 import json
 import time
+import traceback
 
 REDIS_CLIENT = redis.StrictRedis(host='localhost', port=6379, db=1)
 SAVE_MSG_URL = 'https://jh.qiuxiaokun.com/api/chat/save/'
@@ -46,24 +47,28 @@ def save_chat_msg(user_id, wine_code, msg_type, content, video_img, create_at):
         else:
             return False
     except Exception:
+        traceback.print_exc()
         return False
 
 
 def get_detail_info(code):
+    print('enter get_detal_info===')
     data = {
         'code': code
     }
-    headers = {
-        'Content-type': 'application/json; charset=utf-8'
-    }
-    r = requests.post(url=GET_DETAIL_INFO, data=data, headers=headers)
+    # headers = {
+    #     'Content-type': 'application/json; charset=utf-8'
+    # }
+    r = requests.post(url=GET_DETAIL_INFO, data=data)
     try:
         save_info = r.json()
+        print('get_detail_info save_info is {0}'.format(save_info))
         if save_info['code'] == '000000':
             return True, save_info
         else:
             return False, save_info
     except Exception:
+        traceback.print_exc()
         return False, {}
 
 def listen():
@@ -76,6 +81,7 @@ def listen():
             print('item data is {0}'.format(params))
             try:
                 params = json.loads(params.decode('utf8').replace('\'', '\"'))
+                print('params is {0}'.format(params))
                 if item['channel'].decode('utf8') == 'save_msg':
                     save_info = save_chat_msg(
                         params['user_id'],
@@ -92,9 +98,10 @@ def listen():
                         save_info['data']['code'] = params['code']
                         save_info['data']['time'] = params['time']
                         print('last price info is {0}'.format(save_info))
-                        url = 'http://39.108.142.204:8001/last_price/?data={0}'.format(save_info['data'])
-                        r = requests.get(url)
-                        if r.content == '000000':
+                        url = 'http://39.108.142.204:8001/last_price/'
+                        r = requests.post(url, data=save_info['data'])
+                        print('get last_price content is {0}'.format(r.content))
+                        if r.content == b'000000':
                             print('广播最新详情信息<<<成功>>>！')
                         else:
                             print('广播最新详情信息<<<失败>>>！')
@@ -108,6 +115,7 @@ def listen():
                 else:
                     pass
             except Exception:
+                traceback.print_exc()
                 pass
 
 
