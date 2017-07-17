@@ -35,13 +35,9 @@ app.get('/', function(req, res){
 });
 
 app.get('/last_price/', function(req, res){
-    //res.sendFile(__dirname + '/index.html');
-    code = req.query.code;
-    price = req.query.price;
-    time = req.query.time
-    console.log(code);
-    console.log(price);
-    io.emit('last_price', {'code': code, 'price': price, 'time': time});
+    data = req.query.data;
+    console.log(data);
+    io.emit('last_price', data);
     res.send("000000")
 });
  

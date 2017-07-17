@@ -6,6 +6,8 @@ import time
 
 REDIS_CLIENT = redis.StrictRedis(host='localhost', port=6379, db=1)
 SAVE_MSG_URL = 'https://jh.qiuxiaokun.com/api/chat/save/'
+GET_DETAIL_INFO = 'https://jh.qiuxiaokun.com/api/wine/detail/'
+EMIT_DETAIL_INFO = 'http://39.108.142.204:8001/last_price/'
 
 
 def get_access_token(url, username, password, client_id, client_secret):
@@ -47,6 +49,23 @@ def save_chat_msg(user_id, wine_code, msg_type, content, video_img, create_at):
         return False
 
 
+def get_detail_info(code):
+    data = {
+        'code': code
+    }
+    headers = {
+        'Content-type': 'application/json; charset=utf-8'
+    }
+    r = requests.post(url=GET_DETAIL_INFO, data=data, headers=headers)
+    try:
+        save_info = r.json()
+        if save_info['code'] == '000000':
+            return True, save_info
+        else:
+            return False, save_info
+    except Exception:
+        return False, {}
+
 def listen():
     ps = REDIS_CLIENT.pubsub()
     ps.subscribe(['save_msg', 'last_price'])
@@ -68,12 +87,24 @@ def listen():
                     )
                     print('Save chat message is successful? {0}'.format(save_info))
                 elif item['channel'].decode('utf8') == 'last_price':
+                    rval, save_info = get_detail_info(params['code'])
+                    if rval:
+                        save_info['data']['code'] = params['code']
+                        save_info['data']['time'] = params['time']
+                        print('last price info is {0}'.format(save_info))
+                        url = 'http://39.108.142.204:8001/last_price/?data={0}'.format(save_info['data'])
+                        r = requests.get(url)
+                        if r.content == '000000':
+                            print('广播最新详情信息<<<成功>>>！')
+                        else:
+                            print('广播最新详情信息<<<失败>>>！')
+                    '''
                     save_info = (
                         params['code'],
                         params['price'],
                         params['time']
                     )
-                    print('last price info is {0}'.format(save_info))
+                    '''
                 else:
                     pass
             except Exception:

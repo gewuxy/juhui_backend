@@ -282,7 +282,7 @@ def sell(request):
                 _logger.info('修改价格失败！')
             # 广播最新价格
             timestamp = str(int(time.time() * 1000))
-            res_emit = price_emit(wine.code, order.price, timestamp)
+            res_emit = price_emit(wine.code, timestamp)
             if res_emit:
                 _logger.info('最新价格广播成功！')
             else:
@@ -310,7 +310,7 @@ def sell(request):
                 _logger.info('修改价格失败！')
             # 广播最新价格
             timestamp = str(int(time.time() * 1000))
-            res = price_emit(wine.code, order.price, timestamp)
+            res = price_emit(wine.code, timestamp)
             if res:
                 _logger.info('最新价格广播成功！')
             else:
@@ -391,7 +391,7 @@ def buy(request):
                 _logger.info('修改价格失败！')
             # 广播最新价格
             timestamp = str(int(time.time() * 1000))
-            res = price_emit(wine.code, order.price, timestamp)
+            res = price_emit(wine.code, timestamp)
             if res:
                 _logger.info('最新价格广播成功！')
             else:
@@ -419,7 +419,7 @@ def buy(request):
                 _logger.info('修改价格失败！')
             # 广播最新价格
             timestamp = str(int(time.time() * 1000))
-            res = price_emit(wine.code, order.price, timestamp)
+            res = price_emit(wine.code, timestamp)
             if res:
                 _logger.info('最新价格广播成功！')
             else:

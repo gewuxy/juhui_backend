@@ -7,8 +7,11 @@ import datetime
 import calendar
 import logging
 import requests
+import redis
+import json
 
 _logger = logging.getLogger('wine_view_lib')
+REDIS_CLIENT = redis.StrictRedis(host='localhost', port=6379, db=1)
 
 def up_ratio(code=None):
     if code:  # 获取该红酒的现价，涨幅
@@ -246,13 +249,9 @@ def quotes(request):
     return JsonResponse(get_response_data('000000', data))
 
 
-def price_emit(code, price, timestamp):
-    url = 'http://39.108.142.204:8001/last_price/?code={0}&price={1}&time={2}'.format(code, price, timestamp)
-    r = requests.get(url)
-    if r.content == '000000':
-        return True
-    else:
-        return False
+def price_emit(code, timestamp):
+    REDIS_CLIENT.publish('last_price', json.dumps({'code': code, 'time': timestamp}))
+    return True
 
 
 def change_price(code, price):
