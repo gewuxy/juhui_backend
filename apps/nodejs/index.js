@@ -33,17 +33,13 @@ app.post('/send_msg/', function(req, res){
     code = data.code;
     console.log('code: ' + code + 'data: ' + data);
     io.emit(code, data);
+    client.publish('save_msg',JSON.stringify(data))
     res.send({'code': '000000', 'msg': 'SUCCESS', 'data': {}});
 });
 
 io.on('connection', function(socket){
-    code = socket.handshake.query.code
-    console.log('query' + code)
-    if (code === undefined) {
-        console.log('非法请求');
-        return;
-    }
-    console.log('a user connected' + '===' + code + '===');
+    console.log('a user connected');
+    /***
     socket.on(code, function(msg){
         io.emit(code, msg);
         //client.set('nodejs_test', msg, redis.print)
@@ -51,6 +47,7 @@ io.on('connection', function(socket){
         //client.publish('save_msg', msg.toString('utf8'))
         console.log('message: ' + msg + '===' + code + '====');
     });
+    ***/
     socket.on('disconnect', function(){
         console.log('user disconnected');
     });
