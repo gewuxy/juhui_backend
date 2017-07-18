@@ -262,3 +262,38 @@ def change_price(code, price):
         return True
     except Exception:
         return False
+
+
+def select_emit(code, operation):
+    select_key = 'juhui_chat_select_' + code
+    select_val = REDIS_CLIENT.get(select_key)
+    if select_val:
+        select_val = int(select_val)
+    else:
+        select_val = 0
+    if operation == 'add':
+        select_val += 1
+    elif operation == 'delete':
+        select_val -= 1
+    else:
+        pass
+    if select_val < 0:
+        select_val = 0
+    popularity_key = 'juhui_chat_popularity_' + code
+    popularity_val = REDIS_CLIENT.get(popularity_key)
+    if popularity_val:
+        popularity_val = int(popularity_val)
+    else:
+        popularity_val = 0
+    url = 'http://39.108.142.204:8001/emit_select/'
+    data = {
+        'code': code,
+        'is_msg': '0',
+        'popularity': popularity_val,
+        'select': select_val
+    }
+    r = requests.post(url, data=data)
+    if r.content == b'000000':
+        return True
+    else:
+        return False

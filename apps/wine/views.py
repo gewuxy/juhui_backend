@@ -5,7 +5,7 @@ from apps.wine.models import WineInfo
 from apps.wine.models import Commission, Deal, Position
 from apps.wine.wine_view_lib import up_ratio
 from apps import get_response_data
-from apps.wine.wine_view_lib import price_emit, change_price
+from apps.wine.wine_view_lib import price_emit, change_price, select_emit, REDIS_CLIENT
 
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
@@ -60,6 +60,12 @@ def set_optional(request):
     # personal_select += wine_code + ';'
     jh_user.personal_select = personal_select
     jh_user.save()
+    # 推送最新自选信息
+    rval = select_emit(wine_code, 'add')
+    if rval:
+        _logger.info('推送最新自选信息<<<成功>>>!')
+    else:
+        _logger.info('推送最新自选信息<<<失败>>>!')
     res = get_response_data('000000')
     return JsonResponse(res)
 
@@ -160,6 +166,13 @@ def del_optional(request):
     new_codes = ';'.join(new_codes)
     jh_user.personal_select = new_codes
     jh_user.save()
+    # 推送最新自选信息
+    for del_code in del_codes:
+        rval = select_emit(del_code, 'delete')
+        if rval:
+            _logger.info('code: {0}, 推送最新自选信息<<<成功>>>!'.format(del_code))
+        else:
+            _logger.info('code: {0}, 推送最新自选信息<<<失败>>>!'.format(del_code))
     res = get_response_data('000000', data)
     return JsonResponse(res)
 
