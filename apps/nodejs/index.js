@@ -38,6 +38,15 @@ app.post('/send_msg/', function(req, res){
     res.send({'code': '000000', 'msg': 'SUCCESS', 'data': {}});
 });
 
+app.post('/emit_select/', function(req, res){
+    console.log('enter emit_select');
+    data = req.body;
+    console.log('req.data: ' + data);
+    code = data.code;
+    io.emit(code, {'is_msg': '0', 'popularity': data.popularity, 'select': data.select})
+    res.send('000000');
+});
+
 io.on('connection', function(socket){
     console.log('a user connected');
     code = socket.handshake.query.code;
@@ -69,8 +78,15 @@ io.on('connection', function(socket){
         console.log('message: ' + JSON.stringify(msg) + '===' + code + '====');
     });
     socket.on('disconnect', function(){
+        popularity_val = client.get(popularity_key);
+        popularity_val = Number(popularity_val) - 1;
+        select_val = client.get(select_key);
+        if (select_val){
+            select_val = Number(select_val);
+        }else{
+            select_val = 0;
         console.log('user disconnected');
-        io.emit(code, {'is_msg': '0', 'popularity': '-1', 'select': '0'});
+        io.emit(code, {'is_msg': '0', 'popularity': popularity_val, 'select': select_val});
     });
 });
 
