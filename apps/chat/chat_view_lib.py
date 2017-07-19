@@ -1,5 +1,4 @@
 # -*- coding: utf8 -*-
-import cv2
 import subprocess
 from config.settings.common import FFMPEG_BIN_PATH
 import os
@@ -10,18 +9,6 @@ from apps import get_response_data
 
 REDIS_CLIENT = redis.StrictRedis(host='localhost', port=6379, db=1)
 # FFMPEG_BIN_PATH = '/usr/local/bin/ffmpeg'
-
-def set_video_img(from_path, to_path):
-    vc = cv2.VideoCapture(from_path)
-    if vc.isOpened():
-        rval, frame = vc.read()
-    else:
-        rval = False
-    if rval:
-        rval, frame = vc.read()
-        cv2.imwrite(to_path, frame)
-    vc.release()
-    return rval
 
 def set_video_img_1(from_path, to_path):
     '''
