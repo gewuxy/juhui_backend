@@ -62,6 +62,31 @@ def up_ratio(code=None):
         return high_ratio_codes, low_ratio_codes
 
 
+def _get_quotes():
+    high_ratio_codes = []
+    low_ratio_codes = []
+    for wine in WineInfo.objects.all():
+        deals = Deal.objects.filter(wine=wine).order_by('-create_at')
+        if deals.count() == 0:
+            continue
+        last_price = deals[0].price
+        if deals.count() < 2:
+            continue
+        pre_price = deals[1].price
+        if pre_price == 0:
+            continue
+        ratio = (last_price - pre_price) / pre_price
+        if ratio > 0:
+            high_ratio_codes.append((wine.code, ratio, last_price))
+        elif ratio < 0:
+            low_ratio_codes.append((wine.code, ratio, last_price))
+    high_ratio_codes.sort(key=lambda x: x[1])
+    high_ratio_codes = high_ratio_codes[:10]
+    low_ratio_codes.sort(key=lambda x: x[1])
+    low_ratio_codes = low_ratio_codes[:10]
+    return high_ratio_codes, low_ratio_codes
+
+
 def forchart(request):
     wine_code = request.POST.get('code')
     period = request.POST.get('period', '1d')
@@ -233,7 +258,8 @@ def k_line(request):
 
 
 def quotes(request):
-    high, low = up_ratio()
+    # high, low = up_ratio()
+    high, low = _get_quotes()
     data = {'high_ratio': [], 'low_ratio': []}
     for i in range(10):
         wine = WineInfo.objects.get(code=high[i][0])
