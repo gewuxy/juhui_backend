@@ -297,3 +297,21 @@ def select_emit(code, operation):
         return True
     else:
         return False
+
+
+def last_price_ratio(code):
+    try:
+        wine = WineInfo.objects.get(code=code)
+    except Exception:
+        return 0, '0.00%'
+    deals = Deal.objects.filter(wine=wine).order_by('-create_at')
+    if deals.count() == 0:
+        return 0, '0.00%'
+    last_price = deals[0].price
+    if deals.count < 2:
+        return last_price, '0.00%'
+    pre_price = deals[1].price
+    if pre_price == 0:
+        return last_price, '0.00%'
+    return last_price, '{:.2f}%'.format(
+        (last_price - pre_price) / pre_price * 100)

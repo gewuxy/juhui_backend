@@ -3,7 +3,7 @@ from django.http import JsonResponse
 from apps.account.models import Jh_User
 from apps.wine.models import WineInfo
 from apps.wine.models import Commission, Deal, Position
-from apps.wine.wine_view_lib import up_ratio
+from apps.wine.wine_view_lib import last_price_ratio
 from apps import get_response_data
 from apps.wine.wine_view_lib import price_emit, change_price, select_emit, REDIS_CLIENT
 
@@ -93,7 +93,7 @@ def get_optional(request):
             _logger.info('wine {0} not found'.format(wine_code))
             continue
         wine_json = wine.to_json()
-        last_price, ratio = up_ratio(wine_code)
+        last_price, ratio = last_price_ratio(wine_code)
         wine_json['quote_change'] = ratio  # 待后续补充计算方法
         wine_json['last_price'] = last_price
         # wine_json['proposed_price'] = last_price
@@ -123,6 +123,8 @@ def search_wine(request):
         wine_info = WineInfo.objects.all()[start:end]
         for wine in wine_info:
             wine_json = wine.to_json()
+            last_price, ratio = last_price_ratio(wine.code)
+            wine_json['last_price'] = last_price
             if wine.code in select_codes:
                 wine_json['is_select'] = True
             else:
@@ -132,6 +134,8 @@ def search_wine(request):
         wine_info = WineInfo.objects.filter(name__contains=key)[start:end]
         for wine in wine_info:
             wine_json = wine.to_json()
+            last_price, ratio = last_price_ratio(wine.code)
+            wine_json['last_price'] = last_price
             if wine.code in select_codes:
                 wine_json['is_select'] = True
             else:
