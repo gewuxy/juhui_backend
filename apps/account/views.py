@@ -24,6 +24,11 @@ TIMEOUT = 10
 
 
 def is_valid(body, params_list):
+    '''
+    :param body: 请求data
+    :param params_list: 所需参数列表
+    :return: 验证参数是否存在
+    '''
     _logger.info('request.POST: {0}'.format(body))
     for i in params_list:
         if i not in body.keys():
@@ -32,6 +37,11 @@ def is_valid(body, params_list):
 
 
 def check_sms_code(mobile, code):
+    '''
+    :param mobile: 手机号
+    :param code: 验证码
+    :return: 校验验证码是否正确
+    '''
     redis_client = redis.StrictRedis(
         host=REDIS['HOST'], port=REDIS['PORT'], db=1)
     code_in_redis = redis_client.get('juhui_sms_code_' + mobile)
@@ -44,6 +54,14 @@ def check_sms_code(mobile, code):
 
 
 def get_access_token(url, username, password, client_id, client_secret):
+    '''
+    :param url: 获取access_token的url
+    :param username: 用户名称
+    :param password: 密码
+    :param client_id: 客户端id
+    :param client_secret: 客户端密钥
+    :return: 获取access_token
+    '''
     data = {
         'url': url,
         'username': username,
@@ -234,6 +252,7 @@ def send_sms(request):
 class InfoView(APIView):
     permission_classes = (IsAuthenticated,)
 
+    # 获取用户个人信息
     def get(self, request, *args, **kwargs):
         try:
             jh_user = Jh_User.objects.get(user=request.user)
@@ -244,6 +263,7 @@ class InfoView(APIView):
         res = get_response_data('000000', jh_user.to_json())
         return Response(res)
 
+    # 修改用户个人信息
     def post(self, request, *args, **kwargs):
         try:
             jh_user = Jh_User.objects.get(user=request.user)
@@ -264,6 +284,7 @@ class InfoView(APIView):
         return JsonResponse(res)
 
 
+# 上传用户头像
 @api_view(['POST'])
 @permission_classes((IsAuthenticated, ))
 def upload(request):

@@ -13,55 +13,8 @@ import json
 _logger = logging.getLogger('wine_view_lib')
 REDIS_CLIENT = redis.StrictRedis(host='localhost', port=6379, db=1)
 
-def up_ratio(code=None):
-    if code:  # 获取该红酒的现价，涨幅
-        today = datetime.datetime.now().date()
-        yesterday = today - datetime.timedelta(days=1)
-        wine = WineInfo.objects.get(code=code)
-        t_deals = Deal.objects.filter(
-            wine=wine, create_at__date=today).order_by('-create_at')
-        if t_deals.count() == 0:
-            return 0, '0.00%'
-        last_price = t_deals[0].price
-        y_deals = Deal.objects.filter(
-            wine=wine, create_at__date=yesterday).order_by('-create_at')
-        if y_deals.count() == 0:
-            return 0, '0.00%'
-        yesterday_price = y_deals[0].price
-        if yesterday_price == 0:
-            return 0, '0.00%'
-        return last_price, '{:.2f}%'.format(
-            (last_price - yesterday_price) / yesterday_price * 100)
-    else:  # 获取行情数据
-        high_ratio_codes = []
-        low_ratio_codes = []
-        today = datetime.datetime.now().date()
-        yesterday = today - datetime.timedelta(days=1)
-        for wine in WineInfo.objects.all():
-            t_deals = Deal.objects.filter(
-                wine=wine, create_at__date=today).order_by('-create_at')
-            if t_deals.count() == 0:
-                continue
-            last_price = t_deals[0].price
-            y_deals = Deal.objects.filter(
-                wine=wine, create_at__lte=yesterday).order_by('-create_at')
-            if y_deals.count() == 0:
-                continue
-            yesterday_price = y_deals[0].price
-            if yesterday_price == 0:
-                continue
-            ratio = (last_price - yesterday_price) / yesterday_price
-            if ratio > 0:
-                high_ratio_codes.append((wine.code, ratio, last_price))
-            elif ratio < 0:
-                low_ratio_codes.append((wine.code, ratio, last_price))
-        high_ratio_codes.sort(key=lambda x:x[1])
-        high_ratio_codes = high_ratio_codes[:10]
-        low_ratio_codes.sort(key=lambda x:x[1])
-        low_ratio_codes = low_ratio_codes[:10]
-        return high_ratio_codes, low_ratio_codes
 
-
+# 获取涨跌幅数据
 def _get_quotes():
     high_ratio_codes = []
     low_ratio_codes = []
@@ -87,6 +40,7 @@ def _get_quotes():
     return high_ratio_codes, low_ratio_codes
 
 
+# 获取分时图数据
 def forchart(request):
     wine_code = request.POST.get('code')
     period = request.POST.get('period', '1d')
@@ -154,6 +108,7 @@ def forchart(request):
     return JsonResponse(get_response_data('000000', data_list))
 
 
+# 获取K线图数据
 def k_line(request):
     wine_code = request.POST.get('code')
     period = request.POST.get('period')
@@ -257,8 +212,8 @@ def k_line(request):
     return JsonResponse(get_response_data('000000', data_list))
 
 
+# 获取行情数据
 def quotes(request):
-    # high, low = up_ratio()
     high, low = _get_quotes()
     data = {'high_ratio': [], 'low_ratio': []}
     for i in range(10):
@@ -275,11 +230,13 @@ def quotes(request):
     return JsonResponse(get_response_data('000000', data))
 
 
+# 最新价格广播
 def price_emit(code, timestamp):
     REDIS_CLIENT.publish('last_price', json.dumps({'code': code, 'time': timestamp}))
     return True
 
 
+# 修改红酒的参考价
 def change_price(code, price):
     try:
         wine = WineInfo.objects.get(code=code)
@@ -290,6 +247,7 @@ def change_price(code, price):
         return False
 
 
+# 自选数据的广播，主要用于公众号中自选数据的实时更新
 def select_emit(code, operation):
     select_key = 'juhui_chat_select_' + code
     select_val = REDIS_CLIENT.get(select_key)
@@ -325,6 +283,7 @@ def select_emit(code, operation):
         return False
 
 
+# 获取最新价格和涨幅数据
 def last_price_ratio(code):
     try:
         wine = WineInfo.objects.get(code=code)

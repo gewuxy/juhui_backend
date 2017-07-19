@@ -24,6 +24,11 @@ def set_video_img(from_path, to_path):
     return rval
 
 def set_video_img_1(from_path, to_path):
+    '''
+    :param from_path: 视频地址
+    :param to_path: 保存截图的地址
+    :return: 保存视频的一张截图
+    '''
     process = subprocess.Popen(
         [FFMPEG_BIN_PATH, '-ss', '00:00:02', '-i', from_path, '-vframes', '1', '-q:v', '2', '-f',
          'image2', 'pipe:1', to_path],

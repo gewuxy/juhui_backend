@@ -10,6 +10,7 @@ from apps.chat.chat_view_lib import set_video_img_1
 import time
 
 
+# 获取聊天记录
 @api_view(['GET'])
 @permission_classes((IsAuthenticated, ))
 def get_comment(request):
@@ -46,6 +47,7 @@ def get_comment(request):
     return JsonResponse(get_response_data('000000', data))
 
 
+# 保存聊天信息
 def save_comment(request):
     user_id = request.POST.get('user_id')
     wine_code = request.POST.get('wine_code')
@@ -72,6 +74,7 @@ def save_comment(request):
     return JsonResponse(get_response_data('000000'))
 
 
+# 上传媒体文件
 @api_view(['POST'])
 @permission_classes((IsAuthenticated, ))
 def upload(request):

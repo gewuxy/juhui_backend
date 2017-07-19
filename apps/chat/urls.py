@@ -11,9 +11,9 @@ from apps.chat.tests import (
 from apps.chat.chat_view_lib import first_set_select_redis
 
 urlpatterns = [
-    url(r'^comment/$', get_comment, name='get_comment'),
-    url(r'^createcomment/$', create_comment, name='create_comment'),
-    url(r'upload/$', upload, name='upload'),
-    url(r'save/$', save_comment, name='save_comment'),
-    url(r'setselectredis', first_set_select_redis, name='first_set_select_redis')
+    url(r'^comment/$', get_comment, name='get_comment'),  # 获取聊天记录
+    url(r'^createcomment/$', create_comment, name='create_comment'),  # 测试用
+    url(r'upload/$', upload, name='upload'),  # 上传媒体文件
+    url(r'save/$', save_comment, name='save_comment'),  # 保存聊天信息
+    url(r'setselectredis', first_set_select_redis, name='first_set_select_redis')  # 初始化自选信息到redis中
 ]

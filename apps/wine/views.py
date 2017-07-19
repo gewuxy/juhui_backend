@@ -22,6 +22,12 @@ MAX_PAGE_NUM = 100
 
 
 def get_wine_list(codes_str, start=0, end=MAX_PAGE_NUM):
+    '''
+    :param codes_str: 个人信息中的自选列表
+    :param start: 开始索引
+    :param end: 结尾索引
+    :return: 根据自选列表信息中的code返回自选酒的详细信息列表
+    '''
     codes_list = codes_str.split(';')
     data = []
     sort_no = start
@@ -39,6 +45,7 @@ def get_wine_list(codes_str, start=0, end=MAX_PAGE_NUM):
     return data
 
 
+# 添加自选
 @api_view(['POST'])
 @permission_classes((IsAuthenticated, ))
 def set_optional(request):
@@ -70,6 +77,7 @@ def set_optional(request):
     return JsonResponse(res)
 
 
+# 获取自选列表
 @api_view(['GET'])
 @permission_classes((IsAuthenticated, ))
 def get_optional(request):
@@ -104,6 +112,7 @@ def get_optional(request):
     return JsonResponse(res)
 
 
+# 搜索
 @api_view(['POST'])
 @permission_classes((IsAuthenticated, ))
 def search_wine(request):
@@ -145,6 +154,7 @@ def search_wine(request):
     return JsonResponse(res)
 
 
+# 删除自选
 @api_view(['POST'])
 @permission_classes((IsAuthenticated, ))
 def del_optional(request):
@@ -181,6 +191,7 @@ def del_optional(request):
     return JsonResponse(res)
 
 
+# 对自选数据排序
 @api_view(['POST'])
 @permission_classes((IsAuthenticated, ))
 def sort_optional(request):
@@ -231,6 +242,7 @@ def sort_optional(request):
         return JsonResponse(get_response_data('000000', data))
 
 
+# 卖出
 @api_view(['POST'])
 @permission_classes((IsAuthenticated, ))
 def sell(request):
@@ -345,6 +357,7 @@ def sell(request):
     return JsonResponse(get_response_data('000000'))
 
 
+# 买入
 @api_view(['POST'])
 @permission_classes((IsAuthenticated, ))
 def buy(request):
@@ -454,6 +467,7 @@ def buy(request):
     return JsonResponse(get_response_data('000000'))
 
 
+# 详情页数据
 def detail(request):
     lastest_price = 0  # 最新价
     highest_price = 0  # 最高价

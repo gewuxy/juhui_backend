@@ -19,14 +19,14 @@ from apps.account.tests import (
 
 
 urlpatterns = [
-    url(r'^register/$', register, name='register'),
-    url(r'^sendsms/$', send_sms, name='send_sms'),
-    url(r'^login/$', login, name='login'),
-    url(r'^logout/$', logout, name='logout'),
-    url(r'^resetpw/$', resetpassword, name='resetpassword'),
-    url(r'^info/$', InfoView.as_view(), name='info'),
-    url(r'^upload/$', upload, name='upload'),
-
+    url(r'^register/$', register, name='register'),  # 注册
+    url(r'^sendsms/$', send_sms, name='send_sms'),  # 发送验证码短信
+    url(r'^login/$', login, name='login'),  # 登录
+    url(r'^logout/$', logout, name='logout'),  # 退出登录
+    url(r'^resetpw/$', resetpassword, name='resetpassword'),  # 修改密码
+    url(r'^info/$', InfoView.as_view(), name='info'),  # 用户个人信息
+    url(r'^upload/$', upload, name='upload'),  # 上传媒体信息
+    # 以下为测试接口
     url(r'^createuser/$', create_user, name='create_user'),
     url(r'^distribposition/$', distrib_position, name='distrib_position'),
     url(r'^createcommission1/$', create_commission_1,
