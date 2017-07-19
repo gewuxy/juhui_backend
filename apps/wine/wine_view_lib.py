@@ -13,7 +13,6 @@ import json
 _logger = logging.getLogger('wine_view_lib')
 REDIS_CLIENT = redis.StrictRedis(host='localhost', port=6379, db=1)
 
-
 # 获取涨跌幅数据
 def _get_quotes():
     high_ratio_codes = []
