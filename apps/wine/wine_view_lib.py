@@ -14,7 +14,8 @@ _logger = logging.getLogger('wine_view_lib')
 REDIS_CLIENT = redis.StrictRedis(host='localhost', port=6379, db=1)
 
 def up_ratio(code=None):
-    if code:  # 获取该红酒的现价，涨幅
+    if code:
+        # 获取该红酒的现价，涨幅
         today = datetime.datetime.now().date()
         yesterday = today - datetime.timedelta(days=1)
         wine = WineInfo.objects.get(code=code)
@@ -32,7 +33,8 @@ def up_ratio(code=None):
             return 0, '0.00%'
         return last_price, '{:.2f}%'.format(
             (last_price - yesterday_price) / yesterday_price * 100)
-    else:  # 获取行情数据
+    else:
+        # 获取行情数据
         high_ratio_codes = []
         low_ratio_codes = []
         today = datetime.datetime.now().date()
