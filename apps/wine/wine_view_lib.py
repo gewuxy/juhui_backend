@@ -308,7 +308,7 @@ def last_price_ratio(code):
     if deals.count() == 0:
         return 0, '0.00%'
     last_price = deals[0].price
-    if deals.count < 2:
+    if deals.count() < 2:
         return last_price, '0.00%'
     pre_price = deals[1].price
     if pre_price == 0:
