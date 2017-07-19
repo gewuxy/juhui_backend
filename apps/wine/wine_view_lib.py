@@ -32,7 +32,7 @@ def _get_quotes():
             high_ratio_codes.append((wine.code, ratio, last_price))
         elif ratio < 0:
             low_ratio_codes.append((wine.code, ratio, last_price))
-    high_ratio_codes.sort(key=lambda x: x[1])
+    high_ratio_codes.sort(key=lambda x: x[1], reverse=True)
     high_ratio_codes = high_ratio_codes[:10]
     low_ratio_codes.sort(key=lambda x: x[1])
     low_ratio_codes = low_ratio_codes[:10]
@@ -216,10 +216,10 @@ def quotes(request):
     high, low = _get_quotes()
     data = {'high_ratio': [], 'low_ratio': []}
     for i in range(10):
-        wine = WineInfo.objects.get(code=high[9 - i][0])
+        wine = WineInfo.objects.get(code=high[i][0])
         wine_json = wine.to_json()
-        wine_json['last_price'] = high[9 - i][2]
-        wine_json['ratio'] = '{:.2f}%'.format(high[9 - i][1] * 100)
+        wine_json['last_price'] = high[i][2]
+        wine_json['ratio'] = '{:.2f}%'.format(high[i][1] * 100)
         data['high_ratio'].append(wine_json)
         wine = WineInfo.objects.get(code=low[i][0])
         wine_json = wine.to_json()
