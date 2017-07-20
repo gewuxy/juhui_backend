@@ -128,6 +128,8 @@ def create_commission_1(request):
         data['code'] = position.wine.code
         data['price'] = float(position.price) + 10
         data['num'] = int(position.num) // 2
+        if data['num'] == 0:
+            data['num'] = 1
         r = requests.post(url=sell_url, data=data, headers=headers)
         print('========sell result is========')
         print(r.json())
@@ -167,6 +169,8 @@ def create_commission_0(request):
         data['code'] = wine.code
         data['price'] = float(position.price) + randint(-10, 10)
         data['num'] = int(position.num) // 2
+        if data['num'] == 0:
+            data['num'] = 1
         r = requests.post(url=sell_url, data=data, headers=headers)
         print('========sell result is========')
         print(r.json())
