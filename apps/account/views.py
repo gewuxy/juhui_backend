@@ -353,10 +353,10 @@ def my_position(request):
 
     # 总资产计算
     total_assets += total_market_value
-    buy_commissions = Commission.objects.filter(buyer=jh_user, create_at__gte=today_start, status=0)
+    buy_commissions = Commission.objects.filter(user=jh_user, create_at__gte=today_start, trade_direction=0, status=0)
     for buy_comm in buy_commissions:
         total_assets += buy_comm.price * buy_comm.num
-    sell_commissions = Commission.objects.filter(seller=jh_user, create_at__gte=today_start, status=0)
+    sell_commissions = Commission.objects.filter(user=jh_user, create_at__gte=today_start, trade_direction=1, status=0)
     for sell_comm in sell_commissions:
         deals = Deal.objects.filter(wine=sell_comm.wine).order_by('-create_at')
         if deals.count() == 0:
