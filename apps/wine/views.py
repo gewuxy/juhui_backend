@@ -1,5 +1,6 @@
 # -*- coding: utf8 -*-
 from django.http import JsonResponse
+from django.db.models import Q
 from apps.account.models import Jh_User
 from apps.wine.models import WineInfo
 from apps.wine.models import Commission, Deal, Position
@@ -143,7 +144,8 @@ def search_wine(request):
                 wine_json['is_select'] = False
             data.append(wine_json)
     else:
-        wine_info = WineInfo.objects.filter(name__contains=key)[start:end]
+        # wine_info = WineInfo.objects.filter(name__contains=key)[start:end]
+        wine_info = WineInfo.objects.filter(Q(name__contains=key) | Q(code__contains=key))[start:end]
         for wine in wine_info:
             wine_json = wine.to_json()
             last_price, ratio = last_price_ratio(wine.code)
