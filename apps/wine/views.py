@@ -630,7 +630,7 @@ def today_deal(request):
     start = (page - 1) * page_num
     end = page * page_num
     today = datetime.datetime.now().date()
-    deals = Deal.objects.filter(create_at__data=today).filter(Q(buyer=jh_user) | Q(seller=jh_user))[start:end]
+    deals = Deal.objects.filter(Q(create_at__date=today), Q(buyer=jh_user) | Q(seller=jh_user))[start:end]
     deals_json = []
     for deal in deals:
         deals_json.append(deal.to_json())
