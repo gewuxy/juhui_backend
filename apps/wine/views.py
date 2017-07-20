@@ -636,7 +636,8 @@ def detail(request):
         'sell_5_level': sell_5_level,
         'buy_5_level': buy_5_level,
         'increase': increase,
-        'increase_ratio': increase_ratio
+        'increase_ratio': increase_ratio,
+        'turnover': turnover
     }
     return JsonResponse(get_response_data('000000', data))
 
