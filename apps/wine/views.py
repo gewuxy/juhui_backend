@@ -678,7 +678,7 @@ def today_commission(request):
     start = (page - 1) * page_num
     end = page * page_num
     today = datetime.datetime.now().date()
-    commissions = Commission.objects.filter(create_at__data=today, user=jh_user)[start:end]
+    commissions = Commission.objects.filter(create_at__date=today, user=jh_user)[start:end]
     commissions_json = []
     for commission in commissions:
         commissions_json.append(commission.to_json())
