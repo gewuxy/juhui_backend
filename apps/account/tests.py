@@ -76,6 +76,26 @@ def distrib_position(request):
     return JsonResponse(get_response_data('000000'))
 
 
+# 【测试】给用户分配持仓量, 账户资金
+@api_view(['GET'])
+@permission_classes((IsAdminUser, ))
+def insert_position(request):
+    mobile = request.GET.get('mobile')
+    code = request.GET.get('code')
+    price = request.GET.get('price')
+    num = request.GET.get('num')
+    try:
+        user = Jh_User.objects.get(mobile=mobile)
+        wine = WineInfo.objects.get(code=code)
+        price = float(price)
+        num = int(num)
+    except Exception:
+        return JsonResponse(get_response_data('000002'))
+    position = Position(user=user, wine=wine, price=price, num=num)
+    position.save()
+    return JsonResponse(get_response_data('000000'))
+
+
 # 【测试】给用户生成卖出委托单
 # @api_view(['GET'])
 def create_commission_1(request):
