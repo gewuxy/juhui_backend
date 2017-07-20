@@ -484,6 +484,8 @@ def detail(request):
     deal_count = 0  # 成交量
     total_market_value = 0  # 总市值
     amplitude = ''  # 振幅
+    increase = 0  # 涨幅额
+    increase_ratio = '0.00%'  # 涨幅比例
     wine_code = request.POST.get('code')
     if not wine_code:
         return JsonResponse(get_response_data('000002'))
@@ -507,6 +509,17 @@ def detail(request):
                 highest_price = deal.price
             if lowest_price > deal.price:
                 lowest_price = deal.price
+
+    # 涨幅计算
+    today_start = datetime.datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+    pre_deal = Deal.objects.filter(wine=wine, create_at__lte=today_start).order_by('-create_at')
+    if pre_deal:
+        pre_price = pre_deal[0].price
+        increase = lastest_price - pre_price
+        increase_ratio = '{:.2f}%'.format(increase / pre_price)
+    else:
+        increase = lastest_price
+        increase_ratio = '0.00%'
 
     # 换手率计算
     all_position = Position.objects.all()
@@ -616,7 +629,9 @@ def detail(request):
         'total_market_value': total_market_value,
         'amplitude': amplitude,
         'sell_5_level': sell_5_level,
-        'buy_5_level': buy_5_level
+        'buy_5_level': buy_5_level,
+        'increase': increase,
+        'increase_ratio': increase_ratio
     }
     return JsonResponse(get_response_data('000000', data))
 
