@@ -65,6 +65,7 @@ class Commission(models.Model):
 
     def to_json(self):
         d = {}
+        d['id'] = self.id
         d['wine_code'] = self.wine.code
         d['wine_name'] = self.wine.name
         d['trade_direction'] = '卖出' if self.trade_direction == 1 else '买入'

@@ -494,22 +494,18 @@ def buy(request):
 @api_view(['POST'])
 @permission_classes((IsAuthenticated, ))
 def cancel_commission(request):
-    code = request.POST.get('code')
-    trade_direction = request.POST.get('trade_direction')
-    if not code:
+    commission_id = request.POST.get('commission_id')
+    if not commission_id:
         return JsonResponse(get_response_data('000002'))
     try:
-        trade_direction = int(trade_direction)
-        wine = WineInfo.objects.get(code=code)
         jh_user = Jh_User.objects.get(user=request.user)
     except Exception:
         return JsonResponse(get_response_data('000002'))
     today = datetime.datetime.now().date()
     commissions = Commission.objects.filter(
-        wine=wine,
+        id=commission_id,
         user=jh_user,
         status=0,
-        trade_direction=trade_direction,
         create_at__date=today
     )
     if commissions.count() != 1:
@@ -519,7 +515,7 @@ def cancel_commission(request):
     commission.save()
     # 广播最新买卖5档
     timestamp = str(int(time.time() * 1000))
-    res = price_emit(wine.code, timestamp)
+    res = price_emit(commission.wine.code, timestamp)
     if res:
         _logger.info('最新买卖5档广播成功！')
     else:
