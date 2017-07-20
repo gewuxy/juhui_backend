@@ -8,7 +8,11 @@ from apps.wine.views import (
     sort_optional,
     sell,
     buy,
-    detail
+    detail,
+    today_deal,
+    history_deal,
+    today_commission,
+    history_commission
 )
 from apps.wine.wine_view_lib import (
     forchart,
@@ -30,5 +34,9 @@ urlpatterns = [
     url(r'^test/$', insert_wine, name='test_insert_wine'),  # 测试用
     url(r'^forchart/$', forchart, name='forchart'),  # 分时数据
     url(r'^kline/$', k_line, name='k_line'),  # K线图数据
-    url(r'^quotes/$', quotes, name='quotes')  # 行情数据
+    url(r'^quotes/$', quotes, name='quotes'),  # 行情数据
+    url(r'^todaydeal/$', today_deal, name='today_deal'),  # 当日成交
+    url(r'^historydeal', history_deal, name='history_deal'),  # 历史成交
+    url(r'todaycommission', today_commission, name='today_commission'),  # 当日委托
+    url(r'historycommission', history_commission, name='history_commission') # 历史委托
 ]

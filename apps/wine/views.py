@@ -611,3 +611,93 @@ def detail(request):
         'buy_5_level': buy_5_level
     }
     return JsonResponse(get_response_data('000000', data))
+
+
+# 当日成交
+@api_view(['POST'])
+@permission_classes((IsAuthenticated, ))
+def today_deal(request):
+    try:
+        page = int(request.POST.get('page', OPTINOAL_PAGE))
+        page_num = int(request.POST.get('page_num', OPTINOAL_PAGE_NUM))
+    except Exception as e:
+        _logger.info('error msg is {0}'.format(e))
+        return JsonResponse(get_response_data('000002'))
+    try:
+        jh_user = Jh_User.objects.get(user=request.user)
+    except Exception:
+        return JsonResponse(get_response_data('000007'))
+    start = (page - 1) * page_num
+    end = page * page_num
+    today = datetime.datetime.now().date()
+    deals = Deal.objects.filter(create_at__data=today).filter(Q(buyer=jh_user) | Q(seller=jh_user))[start:end]
+    deals_json = []
+    for deal in deals:
+        deals_json.append(deal.to_json())
+    return JsonResponse(get_response_data('000000', deals_json))
+
+
+# 历史成交
+def history_deal(request):
+    try:
+        page = int(request.POST.get('page', OPTINOAL_PAGE))
+        page_num = int(request.POST.get('page_num', OPTINOAL_PAGE_NUM))
+    except Exception as e:
+        _logger.info('error msg is {0}'.format(e))
+        return JsonResponse(get_response_data('000002'))
+    try:
+        jh_user = Jh_User.objects.get(user=request.user)
+    except Exception:
+        return JsonResponse(get_response_data('000007'))
+    start = (page - 1) * page_num
+    end = page * page_num
+    today = datetime.datetime.now().date()
+    deals = Deal.objects.filter(Q(buyer=jh_user) | Q(seller=jh_user))[start:end]
+    deals_json = []
+    for deal in deals:
+        deals_json.append(deal.to_json())
+    return JsonResponse(get_response_data('000000', deals_json))
+
+
+# 当日委托
+def today_commission(request):
+    try:
+        page = int(request.POST.get('page', OPTINOAL_PAGE))
+        page_num = int(request.POST.get('page_num', OPTINOAL_PAGE_NUM))
+    except Exception as e:
+        _logger.info('error msg is {0}'.format(e))
+        return JsonResponse(get_response_data('000002'))
+    try:
+        jh_user = Jh_User.objects.get(user=request.user)
+    except Exception:
+        return JsonResponse(get_response_data('000007'))
+    start = (page - 1) * page_num
+    end = page * page_num
+    today = datetime.datetime.now().date()
+    commissions = Commission.objects.filter(create_at__data=today, user=jh_user)[start:end]
+    commissions_json = []
+    for commission in commissions:
+        commissions_json.append(commission.to_json())
+    return JsonResponse(get_response_data('000000', commissions_json))
+
+
+# 历史委托
+def history_commission(request):
+    try:
+        page = int(request.POST.get('page', OPTINOAL_PAGE))
+        page_num = int(request.POST.get('page_num', OPTINOAL_PAGE_NUM))
+    except Exception as e:
+        _logger.info('error msg is {0}'.format(e))
+        return JsonResponse(get_response_data('000002'))
+    try:
+        jh_user = Jh_User.objects.get(user=request.user)
+    except Exception:
+        return JsonResponse(get_response_data('000007'))
+    start = (page - 1) * page_num
+    end = page * page_num
+    today = datetime.datetime.now().date()
+    commissions = Commission.objects.filter(user=jh_user)[start:end]
+    commissions_json = []
+    for commission in commissions:
+        commissions_json.append(commission.to_json())
+    return JsonResponse(get_response_data('000000', commissions_json))

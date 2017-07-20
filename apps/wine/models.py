@@ -63,6 +63,27 @@ class Commission(models.Model):
     create_at = models.DateTimeField(auto_now_add=True, verbose_name='委托时间')
     update_at = models.DateTimeField(auto_now=True, verbose_name='修改时间')
 
+    def to_json(self):
+        d = {}
+        d['wine_code'] = self.wine.code
+        d['wine_name'] = self.wine.name
+        d['trade_direction'] = '卖出' if self.trade_direction == 1 else '买入'
+        d['user_id'] = self.user.id
+        d['user_name'] = self.user.nickname
+        if self.status == 0:
+            d['status'] = '可撤'
+        elif self.status == 1:
+            d['status'] = '已撤单'
+        elif self.status == 2:
+            d['status'] = '已成交'
+        else:
+            d['status'] = '取消'
+        d['price'] = self.price
+        d['num'] = self.num
+        d['create_at'] = self.create_at.strftime('%Y-%m-%d %H:%M:%S')
+        d['update_at'] = self.update_at.strftime('%Y-%m-%d %H:%M:%S')
+        return d
+
 
 class Deal(models.Model):
     '''
@@ -74,6 +95,19 @@ class Deal(models.Model):
     price = models.FloatField(verbose_name='成交价')
     num = models.IntegerField(verbose_name='成交数量', default=1)
     create_at = models.DateTimeField(auto_now_add=True, verbose_name='成交时间')
+
+    def to_json(self):
+        d = {}
+        d['wine_code'] = self.wine.code
+        d['wine_name'] = self.wine.name
+        d['buyer_id'] = self.buyer.id
+        d['buyer_name'] = self.buyer.nickname
+        d['seller_id'] = self.seller.id
+        d['seller_name'] = self.seller.nickname
+        d['price'] = self.price
+        d['num'] = self.num
+        d['create_at'] = self.create_at.strftime('%Y-%m-%d %H:%M:%S')
+        return d
 
 
 class Position(models.Model):
