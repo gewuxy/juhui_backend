@@ -113,8 +113,8 @@ def get_optional(request):
 
 
 # 搜索
-@api_view(['POST'])
-@permission_classes((IsAuthenticated, ))
+# @api_view(['POST'])
+# @permission_classes((IsAuthenticated, ))
 def search_wine(request):
     key = request.POST.get('key')
     try:
@@ -123,8 +123,11 @@ def search_wine(request):
     except Exception as e:
         _logger.info('error msg is {0}'.format(e))
         return JsonResponse(get_response_data('000002'))
-    jh_user = Jh_User.objects.get(user=request.user)
-    select_codes = jh_user.personal_select.split(';')
+    try:
+        jh_user = Jh_User.objects.get(user=request.user)
+        select_codes = jh_user.personal_select.split(';')
+    except Exception:
+        select_codes = []
     data = []
     start = (page - 1) * page_num
     end = page * page_num
