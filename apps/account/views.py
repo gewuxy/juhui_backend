@@ -320,6 +320,14 @@ def upload(request):
 @api_view(['POST'])
 @permission_classes((IsAuthenticated, ))
 def my_position(request):
+    try:
+        page = int(request.POST.get('page', 1))
+        page_num = int(request.POST.get('page_num', 10))
+    except Exception as e:
+        _logger.info('error msg is {0}'.format(e))
+        return JsonResponse(get_response_data('000002'))
+    start = (page - 1) * page_num
+    end = page * page_num
     total_assets = 0  # 总资产
     total_market_value = 0  # 总市值
     float_profit_loss = 0  # 浮动盈亏
@@ -373,6 +381,6 @@ def my_position(request):
         'total_market_value': total_market_value,
         'float_profit_loss': float_profit_loss,
         'current_profit_loss': current_profit_loss,
-        'position_list': position_list
+        'position_list': position_list[start:end]
     }
     return JsonResponse(get_response_data('000000', data))
