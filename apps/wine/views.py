@@ -638,6 +638,8 @@ def today_deal(request):
 
 
 # 历史成交
+@api_view(['POST'])
+@permission_classes((IsAuthenticated, ))
 def history_deal(request):
     try:
         page = int(request.POST.get('page', OPTINOAL_PAGE))
@@ -660,6 +662,8 @@ def history_deal(request):
 
 
 # 当日委托
+@api_view(['POST'])
+@permission_classes((IsAuthenticated, ))
 def today_commission(request):
     try:
         page = int(request.POST.get('page', OPTINOAL_PAGE))
@@ -682,6 +686,8 @@ def today_commission(request):
 
 
 # 历史委托
+@api_view(['POST'])
+@permission_classes((IsAuthenticated, ))
 def history_commission(request):
     try:
         page = int(request.POST.get('page', OPTINOAL_PAGE))
