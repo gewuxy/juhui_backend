@@ -392,8 +392,7 @@ def buy(request):
         price=price,
         num=num,
         user=jh_user,
-        status=0,
-        create_at__date=datetime.datetime.now().date()
+        status=0
     )
     commission_order.save()
 
@@ -402,7 +401,8 @@ def buy(request):
         wine=wine,
         trade_direction=1,
         status=0,
-        price__lte=price
+        price__lte=price,
+        create_at__date=datetime.datetime.now().date()
     ).order_by('create_at')
     if not other_comm_orders:
         return JsonResponse(get_response_data('000000'))

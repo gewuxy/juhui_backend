@@ -17,14 +17,17 @@ REDIS_CLIENT = redis.StrictRedis(host='localhost', port=6379, db=1)
 def _get_quotes():
     high_ratio_codes = []
     low_ratio_codes = []
+    today_start = datetime.datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
     for wine in WineInfo.objects.all():
         deals = Deal.objects.filter(wine=wine).order_by('-create_at')
         if deals.count() == 0:
             continue
         last_price = deals[0].price
-        if deals.count() < 2:
-            continue
-        pre_price = deals[1].price
+        pre_deals = deals.filter(create_at__lte=today_start)
+        if pre_deals:
+            pre_price = pre_deals[0].price
+        else:
+            pre_price = 0
         if pre_price == 0:
             continue
         ratio = (last_price - pre_price) / pre_price
@@ -32,6 +35,8 @@ def _get_quotes():
             high_ratio_codes.append((wine.code, ratio, last_price))
         elif ratio < 0:
             low_ratio_codes.append((wine.code, ratio, last_price))
+        else:
+            pass
     high_ratio_codes.sort(key=lambda x: x[1], reverse=True)
     high_ratio_codes = high_ratio_codes[:10]
     low_ratio_codes.sort(key=lambda x: x[1])
@@ -216,16 +221,22 @@ def quotes(request):
     high, low = _get_quotes()
     data = {'high_ratio': [], 'low_ratio': []}
     for i in range(10):
-        wine = WineInfo.objects.get(code=high[i][0])
-        wine_json = wine.to_json()
-        wine_json['last_price'] = high[i][2]
-        wine_json['ratio'] = '{:.2f}%'.format(high[i][1] * 100)
-        data['high_ratio'].append(wine_json)
-        wine = WineInfo.objects.get(code=low[i][0])
-        wine_json = wine.to_json()
-        wine_json['last_price'] = low[i][2]
-        wine_json['ratio'] = '{:.2f}%'.format(low[i][1])
-        data['low_ratio'].append(wine_json)
+        try:
+            wine = WineInfo.objects.get(code=high[i][0])
+            wine_json = wine.to_json()
+            wine_json['last_price'] = high[i][2]
+            wine_json['ratio'] = '{:.2f}%'.format(high[i][1] * 100)
+            data['high_ratio'].append(wine_json)
+        except Exception:
+            pass
+        try:
+            wine = WineInfo.objects.get(code=low[i][0])
+            wine_json = wine.to_json()
+            wine_json['last_price'] = low[i][2]
+            wine_json['ratio'] = '{:.2f}%'.format(low[i][1])
+            data['low_ratio'].append(wine_json)
+        except Exception:
+            continue
     return JsonResponse(get_response_data('000000', data))
 
 
@@ -284,6 +295,7 @@ def select_emit(code, operation):
 
 # 获取最新价格和涨幅数据
 def last_price_ratio(code):
+    today_start = datetime.datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
     try:
         wine = WineInfo.objects.get(code=code)
     except Exception:
@@ -292,9 +304,11 @@ def last_price_ratio(code):
     if deals.count() == 0:
         return 0, '0.00%'
     last_price = deals[0].price
-    if deals.count() < 2:
-        return last_price, '0.00%'
-    pre_price = deals[1].price
+    pre_deals = deals.filter(create_at__lte=today_start)
+    if pre_deals:
+        pre_price = pre_deals[0].price
+    else:
+        pre_price = 0
     if pre_price == 0:
         return last_price, '0.00%'
     return last_price, '{:.2f}%'.format(
