@@ -290,7 +290,8 @@ def sell(request):
         wine=wine,
         trade_direction=0,
         status=0,
-        price__gte=price
+        price__gte=price,
+        create_at__date=datetime.datetime.now().date()
     ).order_by('create_at')
     if not other_comm_orders:
         return JsonResponse(get_response_data('000000'))
@@ -391,7 +392,8 @@ def buy(request):
         price=price,
         num=num,
         user=jh_user,
-        status=0
+        status=0,
+        create_at__date=datetime.datetime.now().date()
     )
     commission_order.save()
 
@@ -569,7 +571,10 @@ def detail(request):
     buy_5_level = [(0, 0), (0, 0), (0, 0), (0, 0), (0, 0)]
     count = 0
     for comm in Commission.objects.filter(
-            wine=wine, trade_direction=1, status=0).order_by('price'):
+            wine=wine,
+            trade_direction=1,
+            status=0,
+            create_at__date=datetime.datetime.now().date()).order_by('price'):
         if count == 5:
             break
         if count == 0:
@@ -584,7 +589,10 @@ def detail(request):
             count += 1
     count = 0
     for comm in Commission.objects.filter(
-            wine=wine, trade_direction=0, status=0).order_by('-price'):
+            wine=wine,
+            trade_direction=0,
+            status=0,
+            create_at__date=datetime.datetime.now().date()).order_by('-price'):
         if count == 5:
             break
         if count == 0:
