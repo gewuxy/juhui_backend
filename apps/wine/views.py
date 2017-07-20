@@ -486,6 +486,7 @@ def detail(request):
     amplitude = ''  # 振幅
     increase = 0  # 涨幅额
     increase_ratio = '0.00%'  # 涨幅比例
+    turnover = 0  # 成交额
     wine_code = request.POST.get('code')
     if not wine_code:
         return JsonResponse(get_response_data('000002'))
@@ -495,9 +496,12 @@ def detail(request):
         _logger.info('wine {0} not found'.format(wine_code))
         return JsonResponse(get_response_data('000002'))
 
+    today_start = datetime.datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+
     # 最新价／最高价／最低价计算
-    deals = Deal.objects.filter(wine=wine).order_by('create_at')
+    deals = Deal.objects.filter(wine=wine, create_at__gte=today_start).order_by('create_at')
     for deal in deals:
+        turnover += deal.price * deal.num
         lastest_price = deal.price
         if deal_count == 0:
             highest_price = deal.price
@@ -511,10 +515,11 @@ def detail(request):
                 lowest_price = deal.price
 
     # 涨幅计算
-    today_start = datetime.datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
     pre_deal = Deal.objects.filter(wine=wine, create_at__lte=today_start).order_by('-create_at')
     if pre_deal:
         pre_price = pre_deal[0].price
+        if lastest_price == 0:
+            lastest_price = pre_price
         increase = lastest_price - pre_price
         increase_ratio = '{:.2f}%'.format(increase / pre_price)
     else:
