@@ -285,6 +285,14 @@ def sell(request):
     )
     commission_order.save()
 
+    # 广播最新买卖5档
+    timestamp = str(int(time.time() * 1000))
+    res = price_emit(wine.code, timestamp)
+    if res:
+        _logger.info('最新买卖5档广播成功！')
+    else:
+        _logger.info('最新买卖5档广播失败！')
+
     # 查询买入委托单，检测该卖出委托单可否成交
     other_comm_orders = Commission.objects.filter(
         wine=wine,
@@ -395,6 +403,14 @@ def buy(request):
         status=0,
     )
     commission_order.save()
+
+    # 广播最新买卖5档
+    timestamp = str(int(time.time() * 1000))
+    res = price_emit(wine.code, timestamp)
+    if res:
+        _logger.info('最新买卖5档广播成功！')
+    else:
+        _logger.info('最新买卖5档广播失败！')
 
     # 查询卖出委托单，检测该买入委托单可否成交
     other_comm_orders = Commission.objects.filter(
