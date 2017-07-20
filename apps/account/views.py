@@ -4,9 +4,11 @@ from django.contrib.auth.models import User
 import json
 import random
 import time
+import datetime
 
 from apps import get_response_data
 from apps.account.models import Jh_User
+from apps.wine.models import Position, Deal, Commission
 import logging
 import top  # taobao SDK
 from config.settings.common import ALIDAYU_KEY, ALIDAYU_SECRET, CODE_EXPIRE
@@ -311,4 +313,66 @@ def upload(request):
             f.write(chunk)
     data = {'media_url': media_url}
 
+    return JsonResponse(get_response_data('000000', data))
+
+
+# 我的持仓
+@api_view(['POST'])
+@permission_classes((IsAuthenticated, ))
+def my_position(request):
+    total_assets = 0  # 总资产
+    total_market_value = 0  # 总市值
+    float_profit_loss = 0  # 浮动盈亏
+    current_profit_loss = 0  # 当日参考盈亏
+    position_list = []  # 持仓详情
+    today_start = datetime.datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+    jh_user = Jh_User.objects.get(user=request.user)
+    jh_user_position = Position.objects.filter(user=jh_user).order_by('-create_at')
+    for jup in jh_user_position:
+        deals = Deal.objects.filter(wine=jup.wine).order_by('-create_at')
+        if deals.count() == 0:
+            total_market_value += jup.price * jup.num  # 总市值计算
+            profit_loss = 0
+            profit_loss_ratio = '0.00%'
+        else:
+            pre_deals = deals.filter(create_at__lt=today_start)
+            if pre_deals.count() == 0:
+                current_profit_loss += deals[0].price * jup.num  # 当日参考盈亏计算
+            else:
+                current_profit_loss += pre_deals[0].price * jup.num  # 当日参考盈亏计算
+            total_market_value += deals[0].price * jup.num  # 总市值计算
+            profit_loss = (deals[0].price - jup.price) * jup.num
+            profit_loss_ratio = '{:.2f}%'.format(profit_loss / jup.price)
+        float_profit_loss += profit_loss  # 浮动盈亏计算
+        position_list.append({
+            'code': jup.wine.code,
+            'profit_loss': profit_loss,
+            'profit_loss_ratio': profit_loss_ratio,
+            'num': jup.num
+        })
+
+    # 总资产计算
+    total_assets += total_market_value
+    buy_commissions = Commission.objects.filter(buyer=jh_user, create_at__gte=today_start, status=0)
+    for buy_comm in buy_commissions:
+        total_assets += buy_comm.price * buy_comm.num
+    sell_commissions = Commission.objects.filter(seller=jh_user, create_at__gte=today_start, status=0)
+    for sell_comm in sell_commissions:
+        deals = Deal.objects.filter(wine=sell_comm.wine).order_by('-create_at')
+        if deals.count() == 0:
+            sell_position = Position.objects.filter(wine=sell_comm.wine)
+            if sell_position.count() == 0:
+                total_assets += sell_comm.price * sell_comm.num
+            else:
+                total_assets += sell_position.price * sell_comm.num
+        else:
+            total_assets += deals[0].price * sell_comm.num
+
+    data = {
+        'total_assets': total_assets,
+        'total_market_value': total_market_value,
+        'float_profit_loss': float_profit_loss,
+        'current_profit_loss': current_profit_loss,
+        'position_list': position_list
+    }
     return JsonResponse(get_response_data('000000', data))

@@ -7,7 +7,8 @@ from apps.account.views import (
     logout,
     resetpassword,
     InfoView,
-    upload
+    upload,
+    my_position
 )
 from apps.account.tests import (
     create_user,
@@ -27,6 +28,7 @@ urlpatterns = [
     url(r'^resetpw/$', resetpassword, name='resetpassword'),  # 修改密码
     url(r'^info/$', InfoView.as_view(), name='info'),  # 用户个人信息
     url(r'^upload/$', upload, name='upload'),  # 上传媒体信息
+    url(r'^myposition/$', my_position, name='my_position')  # 我的持仓
     # 以下为测试接口
     url(r'^createuser/$', create_user, name='create_user'),
     url(r'^distribposition/$', distrib_position, name='distrib_position'),
