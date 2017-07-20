@@ -292,7 +292,7 @@ def sell(request):
         status=0,
         price__gte=price,
         create_at__date=datetime.datetime.now().date()
-    ).order_by('create_at')
+    ).order_by('-price')
     if not other_comm_orders:
         return JsonResponse(get_response_data('000000'))
     for order in other_comm_orders:
@@ -392,7 +392,7 @@ def buy(request):
         price=price,
         num=num,
         user=jh_user,
-        status=0
+        status=0,
     )
     commission_order.save()
 
@@ -403,7 +403,7 @@ def buy(request):
         status=0,
         price__lte=price,
         create_at__date=datetime.datetime.now().date()
-    ).order_by('create_at')
+    ).order_by('price')
     if not other_comm_orders:
         return JsonResponse(get_response_data('000000'))
     for order in other_comm_orders:
