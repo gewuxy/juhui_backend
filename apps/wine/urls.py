@@ -12,7 +12,8 @@ from apps.wine.views import (
     today_deal,
     history_deal,
     today_commission,
-    history_commission
+    history_commission,
+    cancel_commission
 )
 from apps.wine.wine_view_lib import (
     forchart,
@@ -30,6 +31,7 @@ urlpatterns = [
     url(r'^sortopt/$', sort_optional, name='sort_optional'),  # 对自选列表排序
     url(r'^sell/$', sell, name='sell'),  # 卖出
     url(r'^buy/$', buy, name='buy'),  # 买入
+    url(r'^cancelcommission/$', cancel_commission, name='cancel_commission'),  # 撤销委托单
     url(r'^detail/$', detail, name='detail'),  # 详情数据
     url(r'^test/$', insert_wine, name='test_insert_wine'),  # 测试用
     url(r'^forchart/$', forchart, name='forchart'),  # 分时数据

@@ -490,6 +490,43 @@ def buy(request):
     return JsonResponse(get_response_data('000000'))
 
 
+# 撤销委托单
+@api_view(['POST'])
+@permission_classes((IsAuthenticated, ))
+def cancel_commission(request):
+    code = request.POST.get('code')
+    trade_direction = request.POST.get('trade_direction')
+    if not code:
+        return JsonResponse(get_response_data('000002'))
+    try:
+        trade_direction = int(trade_direction)
+        wine = WineInfo.objects.get(code=code)
+        jh_user = Jh_User.objects.get(user=request.user)
+    except Exception:
+        return JsonResponse(get_response_data('000002'))
+    today = datetime.datetime.now().date()
+    commissions = Commission.objects.filter(
+        wine=wine,
+        user=jh_user,
+        status=0,
+        trade_direction=trade_direction,
+        create_at__date=today
+    )
+    if commissions.count() != 1:
+        return JsonResponse(get_response_data('100003'))
+    commission = commissions[0]
+    commission.status = 1
+    commission.save()
+    # 广播最新买卖5档
+    timestamp = str(int(time.time() * 1000))
+    res = price_emit(wine.code, timestamp)
+    if res:
+        _logger.info('最新买卖5档广播成功！')
+    else:
+        _logger.info('最新买卖5档广播失败！')
+    return JsonResponse(get_response_data('000000'))
+
+
 # 详情页数据
 def detail(request):
     lastest_price = 0  # 最新价

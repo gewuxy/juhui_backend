@@ -1,5 +1,6 @@
 # -*- coding: utf8 -*-
 from apps.wine.models import Deal, WineInfo, Position
+from apps.account.models import Jh_User
 from django.http import JsonResponse
 from apps import get_response_data
 import time
@@ -313,3 +314,17 @@ def last_price_ratio(code):
         return last_price, '0.00%'
     return last_price, '{:.2f}%'.format(
         (last_price - pre_price) / pre_price * 100)
+
+
+# 插入新的持仓信息
+def insert_position(code, price, num, user_id):
+    try:
+        wine = WineInfo.objects.get(code=code)
+        user = Jh_User.objects.get(user_id=user_id)
+        price = float(price)
+        num = int(num)
+    except Exception:
+        return False
+    new_position = Position(wine=wine, user=user, price=price, num=num)
+    new_position.save()
+    return True
