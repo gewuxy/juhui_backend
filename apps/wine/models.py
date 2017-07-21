@@ -71,14 +71,7 @@ class Commission(models.Model):
         d['trade_direction'] = '卖出' if self.trade_direction == 1 else '买入'
         d['user_id'] = self.user.id
         d['user_name'] = self.user.nickname
-        if self.status == 0:
-            d['status'] = '可撤'
-        elif self.status == 1:
-            d['status'] = '已撤单'
-        elif self.status == 2:
-            d['status'] = '已成交'
-        else:
-            d['status'] = '取消'
+        d['status'] = self.status
         d['price'] = self.price
         d['num'] = self.num
         d['create_at'] = self.create_at.strftime('%Y-%m-%d %H:%M:%S')
