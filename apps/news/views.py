@@ -14,7 +14,7 @@ def insert_news(request):
     thumb_img = request.POST.get('thumb_img')
     news_time = request.POST.get('news_time')
     href = request.POST.get('href')
-    if title and href:
+    if not (title and href):
         return JsonResponse(get_response_data('000002'))
     try:
         news_time = datetime.datetime.strptime(news_time, '%Y-%m-%d %H:%M')
