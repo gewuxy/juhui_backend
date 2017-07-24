@@ -779,8 +779,8 @@ def history_commission(request):
         return JsonResponse(get_response_data('000007'))
     start = (page - 1) * page_num
     end = page * page_num
-    today = datetime.datetime.now().date()
-    commissions = Commission.objects.filter(user=jh_user)[start:end]
+    today_start = datetime.datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+    commissions = Commission.objects.filter(user=jh_user, create_at__lt=today_start)[start:end]
     commissions_json = []
     for commission in commissions:
         commissions_json.append(commission.to_json())
