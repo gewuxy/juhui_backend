@@ -123,13 +123,11 @@ def create_commission_1(request):
         data = {'code': '', 'price': '', 'num': ''}
         try:
             position = Position.objects.get(user=user)
-            position.num += 50
-            position.save()
         except Exception:
             return JsonResponse(get_response_data('000002'))
         data['code'] = position.wine.code
         data['price'] = randint(500, 1000)
-        data['num'] = randint(1, 50)
+        data['num'] = randint(1, 5)
         r = requests.post(url=sell_url, data=data, headers=headers)
         print('========sell result is========')
         print(r.json())

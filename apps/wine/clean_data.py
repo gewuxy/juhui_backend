@@ -11,4 +11,4 @@ import datetime
 def clean_old_comm(request):
     today_start = datetime.datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
     old_commissions = Commission.objects.filter(create_at__lt=today_start, status=0, )
-    return 
+    return
