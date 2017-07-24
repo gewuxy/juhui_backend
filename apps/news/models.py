@@ -8,7 +8,7 @@ class NewsInfo(models.Model):
     title = models.CharField(max_length=100, verbose_name='标题')
     href = models.CharField(max_length=255, verbose_name='链接')
     thumb_img = models.CharField(max_length=255, verbose_name='缩略图')
-    news_time = models.DateTimeField(auto_now_add=True, verbose_name='新闻源时间')
+    news_time = models.DateTimeField(verbose_name='新闻源时间')
     create_at = models.DateTimeField(auto_now_add=True, verbose_name='创建时间')
 
     class Meta:

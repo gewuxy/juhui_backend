@@ -28,10 +28,10 @@ def insert_news(request):
 # 读取资讯
 def get_news(request):
     try:
-        num = int(request.POST.get('num', 10))
+        num = int(request.POST.get('num', 15))
     except Exception:
         return JsonResponse(get_response_data('000002'))
-    news = NewsInfo.objects.all().order_by('-create_at')[:num]
+    news = NewsInfo.objects.all().order_by('-news_time')[:num]
     data = []
     for n in news:
         data.append(n.to_json())
