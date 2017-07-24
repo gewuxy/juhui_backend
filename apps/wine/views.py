@@ -788,6 +788,8 @@ def history_commission(request):
 
 
 # 详情页撤单接口
+@api_view(['POST'])
+@permission_classes((IsAuthenticated, ))
 def detail_cancel_comm(request):
     wine_code = request.POST.get('code')
     try:
