@@ -802,6 +802,7 @@ def detail_cancel_comm(request):
         return JsonResponse(get_response_data('000007'))
     today = datetime.datetime.now().date()
     comms = Commission.objects.filter(
+        wine=wine,
         user=jh_user,
         status=0,
         create_at__date=today
