@@ -13,7 +13,8 @@ from apps.wine.views import (
     history_deal,
     today_commission,
     history_commission,
-    cancel_commission
+    cancel_commission,
+    detail_cancel_comm,
 )
 from apps.wine.wine_view_lib import (
     forchart,
@@ -40,5 +41,6 @@ urlpatterns = [
     url(r'^todaydeal/$', today_deal, name='today_deal'),  # 当日成交
     url(r'^historydeal', history_deal, name='history_deal'),  # 历史成交
     url(r'todaycommission', today_commission, name='today_commission'),  # 当日委托
-    url(r'historycommission', history_commission, name='history_commission') # 历史委托
+    url(r'historycommission', history_commission, name='history_commission'), # 历史委托
+    url(r'detailcancelcomm', detail_cancel_comm, name='detail_cancel_comm'),  # 详情页撤单
 ]

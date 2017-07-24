@@ -785,3 +785,27 @@ def history_commission(request):
     for commission in commissions:
         commissions_json.append(commission.to_json())
     return JsonResponse(get_response_data('000000', commissions_json))
+
+
+# 详情页撤单接口
+def detail_cancel_comm(request):
+    wine_code = request.POST.get('code')
+    try:
+        wine = WineInfo.objects.get(code=wine_code)
+    except Exception:
+        return JsonResponse(get_response_data('000002'))
+    try:
+        jh_user = Jh_User.objects.get(user=request.user)
+    except Exception:
+        return JsonResponse(get_response_data('000007'))
+    today = datetime.datetime.now().date()
+    comms = Commission.objects.filter(
+        user=jh_user,
+        status=0,
+        create_at__date=today
+    )
+    data = []
+    for comm in comms:
+        data.append(comm.to_json())
+    return JsonResponse(get_response_data('000000', data))
+
