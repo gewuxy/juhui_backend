@@ -708,7 +708,8 @@ def today_deal(request):
     start = (page - 1) * page_num
     end = page * page_num
     today = datetime.datetime.now().date()
-    deals = Deal.objects.filter(Q(create_at__date=today), Q(buyer=jh_user) | Q(seller=jh_user))[start:end]
+    deals = Deal.objects.filter(
+        Q(create_at__date=today), Q(buyer=jh_user) | Q(seller=jh_user)).order_by('-create_at')[start:end]
     deals_json = []
     for deal in deals:
         deals_json.append(deal.to_json())
@@ -731,8 +732,9 @@ def history_deal(request):
         return JsonResponse(get_response_data('000007'))
     start = (page - 1) * page_num
     end = page * page_num
-    today = datetime.datetime.now().date()
-    deals = Deal.objects.filter(Q(buyer=jh_user) | Q(seller=jh_user))[start:end]
+    today_start = datetime.datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+    deals = Deal.objects.filter(
+        Q(create_at__lt=today_start), Q(buyer=jh_user) | Q(seller=jh_user)).order_by('-create_at')[start:end]
     deals_json = []
     for deal in deals:
         deals_json.append(deal.to_json())
@@ -756,7 +758,8 @@ def today_commission(request):
     start = (page - 1) * page_num
     end = page * page_num
     today = datetime.datetime.now().date()
-    commissions = Commission.objects.filter(create_at__date=today, user=jh_user)[start:end]
+    commissions = Commission.objects.filter(
+        create_at__date=today, user=jh_user).order_by('-create_at')[start:end]
     commissions_json = []
     for commission in commissions:
         commissions_json.append(commission.to_json())
@@ -780,7 +783,8 @@ def history_commission(request):
     start = (page - 1) * page_num
     end = page * page_num
     today_start = datetime.datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
-    commissions = Commission.objects.filter(user=jh_user, create_at__lt=today_start)[start:end]
+    commissions = Commission.objects.filter(
+        user=jh_user, create_at__lt=today_start).order_by('-create_at')[start:end]
     commissions_json = []
     for commission in commissions:
         commissions_json.append(commission.to_json())
