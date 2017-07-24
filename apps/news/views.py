@@ -31,8 +31,14 @@ def get_news(request):
         num = int(request.POST.get('num', 15))
     except Exception:
         return JsonResponse(get_response_data('000002'))
-    news = NewsInfo.objects.all().order_by('-news_time')[:num]
+    news = NewsInfo.objects.all().order_by('-news_time')
     data = []
+    titles = []
     for n in news:
+        if len(data) == num:
+            break
+        if n.title in titles:
+            continue
         data.append(n.to_json())
+        titles.append(n.title)
     return JsonResponse(get_response_data('000000', data))
