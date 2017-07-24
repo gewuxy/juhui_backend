@@ -123,13 +123,13 @@ def create_commission_1(request):
         data = {'code': '', 'price': '', 'num': ''}
         try:
             position = Position.objects.get(user=user)
+            position.num += 50
+            position.save()
         except Exception:
-            continue
+            return JsonResponse(get_response_data('000002'))
         data['code'] = position.wine.code
-        data['price'] = float(position.price) + 10
-        data['num'] = int(position.num) // 2
-        if data['num'] == 0:
-            data['num'] = 1
+        data['price'] = randint(500, 1000)
+        data['num'] = randint(1, 50)
         r = requests.post(url=sell_url, data=data, headers=headers)
         print('========sell result is========')
         print(r.json())
@@ -162,17 +162,11 @@ def create_commission_0(request):
         headers = {'Authorization': 'Bearer {0}'.format(token)}
         data = {'code': '', 'price': '', 'num': ''}
         wine = choice(WineInfo.objects.all())
-        try:
-            position = Position.objects.get(wine=wine)
-        except Exception:
-            continue
         data['code'] = wine.code
-        data['price'] = float(position.price) + randint(-10, 10)
-        data['num'] = int(position.num) // 2
-        if data['num'] == 0:
-            data['num'] = 1
+        data['price'] = randint(500, 1000)
+        data['num'] = randint(1, 50)
         r = requests.post(url=sell_url, data=data, headers=headers)
-        print('========sell result is========')
+        print('========buy result is========')
         print(r.json())
 
     return JsonResponse(get_response_data('000000'))
