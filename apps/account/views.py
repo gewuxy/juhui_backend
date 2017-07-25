@@ -175,7 +175,7 @@ def login(request):
             return JsonResponse(get_response_data('000002'))
         uuid_user = Jh_User.objects.filter(union_id=uuid, mobile='')  # 游客账号
         if uuid_user:
-            jh_user.personal_select = uuid_user.personal_select + ';' + jh_user.personal_select
+            jh_user.personal_select = uuid_user[0].personal_select + ';' + jh_user.personal_select
         jh_user.union_id = uuid
         jh_user.save()
 
