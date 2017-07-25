@@ -14,6 +14,16 @@ APPS_DIR = ROOT_DIR.path('apps')
 env = environ.Env()
 env.read_env()
 
+STATIC_ROOT = str(ROOT_DIR('staticfiles'))
+STATIC_URL = '/static/'
+STATICFILES_DIRS = (
+    str(APPS_DIR.path('static')),
+)
+STATICFILES_FINDERS = (
+    'django.contrib.staticfiles.finders.FileSystemFinder',
+    'django.contrib.staticfiles.finders.AppDirectoriesFinder',
+)
+
 # APP CONFIGURATION
 # ------------------------------------------------------------------------------
 DJANGO_APPS = (
@@ -24,6 +34,7 @@ DJANGO_APPS = (
     'django.contrib.sessions',
     'django.contrib.sites',
     'django.contrib.messages',
+    'django.contrib.staticfiles',
     'oauth2_provider',
     'rest_framework',
     # 'rest_framework.authtoken'
