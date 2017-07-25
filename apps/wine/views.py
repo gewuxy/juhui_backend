@@ -59,7 +59,7 @@ def set_optional(request):
     rval, user_id = is_auth(request.META)
     _logger.info('user is auth? {0}, user id is {1}'.format(rval, user_id))
     if rval:
-        jh_user = Jh_User.objects.get(user=user_id)
+        jh_user = Jh_User.objects.get(user_id=user_id)
     elif user_id is not None:
         jh_user = Jh_User.objects.get(id=user_id)
     else:
@@ -96,7 +96,7 @@ def get_optional(request):
     rval, user_id = is_auth(request.META)
     _logger.info('user is auth? {0}, user id is {1}'.format(rval, user_id))
     if rval:
-        jh_user = Jh_User.objects.get(user=user_id)  # 已注册用户
+        jh_user = Jh_User.objects.get(user_id=user_id)  # 已注册用户
     elif user_id is not None:
         jh_user = Jh_User.objects.get(id=user_id)  # 游客
     else:
@@ -147,7 +147,7 @@ def search_wine(request):
     rval, user_id = is_auth(request.META)
     _logger.info('user is auth? {0}, user id is {1}'.format(rval, user_id))
     if rval:
-        jh_user = Jh_User.objects.get(user=user_id)  # 已注册用户
+        jh_user = Jh_User.objects.get(user_id=user_id)  # 已注册用户
     elif user_id is not None:
         jh_user = Jh_User.objects.get(id=user_id)  # 游客
     else:
@@ -195,7 +195,7 @@ def del_optional(request):
     rval, user_id = is_auth(request.META)
     _logger.info('user is auth? {0}, user id is {1}'.format(rval, user_id))
     if rval:
-        jh_user = Jh_User.objects.get(user=user_id)  # 已注册用户
+        jh_user = Jh_User.objects.get(user_id=user_id)  # 已注册用户
     elif user_id is not None:
         jh_user = Jh_User.objects.get(id=user_id)  # 游客
     else:
@@ -245,7 +245,7 @@ def sort_optional(request):
     rval, user_id = is_auth(request.META)
     _logger.info('user is auth? {0}, user id is {1}'.format(rval, user_id))
     if rval:
-        jh_user = Jh_User.objects.get(user=user_id)  # 已注册用户
+        jh_user = Jh_User.objects.get(user_id=user_id)  # 已注册用户
     elif user_id is not None:
         jh_user = Jh_User.objects.get(id=user_id)  # 游客
     else:

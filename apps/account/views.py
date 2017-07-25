@@ -57,7 +57,7 @@ def is_auth(meta):
     else:
         jh_user = Jh_User.objects.filter(union_id=meta.get('HTTP_DEVICEUUID'), mobile='')
         if not jh_user:
-            new_user = Jh_User(user=1, union_id=meta.get('HTTP_DEVICEUUID'))
+            new_user = Jh_User(user_id=1, union_id=meta.get('HTTP_DEVICEUUID'))
             new_user.save()
             return rval, new_user.id
         else:
