@@ -8,7 +8,7 @@ class Jh_User(models.Model):
     用户信息表
     '''
     union_id = models.CharField(
-        max_length=16, verbose_name='用户union_id', null=True)
+        max_length=128, verbose_name='用户union_id', null=True)
     user = models.ForeignKey(User)
     nickname = models.CharField(max_length=40, verbose_name='昵称', null=True)
     mobile = models.CharField(max_length=12, verbose_name='手机号码', default='')

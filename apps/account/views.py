@@ -38,6 +38,32 @@ def is_valid(body, params_list):
     return True, body
 
 
+# 判断是否登录用户,并返回登录用户（游客用户）id
+def is_auth(meta):
+    rval = True
+    if not isinstance(meta, dict):
+        return False, None
+    if not meta.get('HTTP_AUTHORIZATION'):
+        rval = False
+    try:
+        token = meta['HTTP_AUTHORIZATION'].split(' ')[1]
+    except Exception:
+        rval = False
+    r = AccessToken.objects.filter(token=token, expires__gte=datetime.datetime.now())
+    if not r:
+        rval = False
+    if rval:
+        return rval, r[0].user_id
+    else:
+        jh_user = Jh_User.objects.filter(union_id=meta.get('HTTP_DEVICEUUID'), mobile='')
+        if not jh_user:
+            new_user = Jh_User(user=1, union_id=meta.get('HTTP_DEVICEUUID'))
+            new_user.save()
+            return rval, new_user.id
+        else:
+            return rval, jh_user[0].id
+
+
 def check_sms_code(mobile, code):
     '''
     :param mobile: 手机号
@@ -138,9 +164,22 @@ def login(request):
     token = oauth2_info.get('access_token')
     if not token:
         return JsonResponse(get_response_data('000010'))
+
     jh_user = Jh_User.objects.get(mobile=body['mobile'])
     jh_user_json = jh_user.to_json()
     jh_user_json['token'] = token
+
+    # 同步游客账号
+    if not jh_user_json['union_id']:
+        uuid = request.META.get('HTTP_DEVICEUUID')  # 设备id
+        if not uuid:
+            return JsonResponse(get_response_data('000002'))
+        uuid_user = Jh_User.objects.filter(union_id=uuid, mobile='')  # 游客账号
+        if uuid_user:
+            jh_user.personal_select = uuid_user.personal_select + ';' + jh_user.personal_select
+        jh_user.union_id = uuid
+        jh_user.save()
+
     _logger.info('login info: {0}'.format(jh_user_json))
     return JsonResponse(get_response_data('000000', jh_user_json))
 

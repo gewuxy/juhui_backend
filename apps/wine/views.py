@@ -7,6 +7,7 @@ from apps.wine.models import Commission, Deal, Position
 from apps.wine.wine_view_lib import last_price_ratio
 from apps import get_response_data
 from apps.wine.wine_view_lib import price_emit, change_price, select_emit, REDIS_CLIENT
+from apps.account.views import is_auth
 
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
@@ -47,14 +48,23 @@ def get_wine_list(codes_str, start=0, end=MAX_PAGE_NUM):
 
 
 # 添加自选
-@api_view(['POST'])
-@permission_classes((IsAuthenticated, ))
+# @api_view(['POST'])
+# @permission_classes((IsAuthenticated, ))
 def set_optional(request):
     wine_code = request.POST.get('code')
     if not wine_code:
         res = get_response_data('000002')
         return JsonResponse(res)
-    jh_user = Jh_User.objects.get(user=request.user)
+    # 判断用户是否登录
+    rval, user_id = is_auth(request.META)
+    _logger.info('user is auth? {0}, user id is {1}'.format(rval, user_id))
+    if rval:
+        jh_user = Jh_User.objects.get(user=user_id)
+    elif user_id is not None:
+        jh_user = Jh_User.objects.get(id=user_id)
+    else:
+        return JsonResponse(get_response_data('000007'))
+    # jh_user = Jh_User.objects.get(user=request.user)
     personal_select = jh_user.personal_select
     personal_select_list = personal_select.split(';')
     # personal_select_list = list(set(personal_select_list))
@@ -79,10 +89,19 @@ def set_optional(request):
 
 
 # 获取自选列表
-@api_view(['GET'])
-@permission_classes((IsAuthenticated, ))
+# @api_view(['GET'])
+# @permission_classes((IsAuthenticated, ))
 def get_optional(request):
-    jh_user = Jh_User.objects.get(user=request.user)
+    # 判断用户是否登录
+    rval, user_id = is_auth(request.META)
+    _logger.info('user is auth? {0}, user id is {1}'.format(rval, user_id))
+    if rval:
+        jh_user = Jh_User.objects.get(user=user_id)  # 已注册用户
+    elif user_id is not None:
+        jh_user = Jh_User.objects.get(id=user_id)  # 游客
+    else:
+        return JsonResponse(get_response_data('000007'))
+    # jh_user = Jh_User.objects.get(user=request.user)
     personal_select = jh_user.personal_select
     options = personal_select.split(';')
     try:
@@ -124,11 +143,17 @@ def search_wine(request):
     except Exception as e:
         _logger.info('error msg is {0}'.format(e))
         return JsonResponse(get_response_data('000002'))
-    try:
-        jh_user = Jh_User.objects.get(user=request.user)
-        select_codes = jh_user.personal_select.split(';')
-    except Exception:
-        select_codes = []
+    # 判断用户是否登录
+    rval, user_id = is_auth(request.META)
+    _logger.info('user is auth? {0}, user id is {1}'.format(rval, user_id))
+    if rval:
+        jh_user = Jh_User.objects.get(user=user_id)  # 已注册用户
+    elif user_id is not None:
+        jh_user = Jh_User.objects.get(id=user_id)  # 游客
+    else:
+        return JsonResponse(get_response_data('000007'))
+
+    select_codes = jh_user.personal_select.split(';')
     data = []
     start = (page - 1) * page_num
     end = page * page_num
@@ -160,13 +185,22 @@ def search_wine(request):
 
 
 # 删除自选
-@api_view(['POST'])
-@permission_classes((IsAuthenticated, ))
+# @api_view(['POST'])
+# @permission_classes((IsAuthenticated, ))
 def del_optional(request):
     codes = request.POST.get('code')
     if not codes:
         return get_response_data('000002')
-    jh_user = Jh_User.objects.get(user=request.user)
+    # 判断用户是否登录
+    rval, user_id = is_auth(request.META)
+    _logger.info('user is auth? {0}, user id is {1}'.format(rval, user_id))
+    if rval:
+        jh_user = Jh_User.objects.get(user=user_id)  # 已注册用户
+    elif user_id is not None:
+        jh_user = Jh_User.objects.get(id=user_id)  # 游客
+    else:
+        return JsonResponse(get_response_data('000007'))
+    # jh_user = Jh_User.objects.get(user=request.user)
     personal_select = jh_user.personal_select.split(';')
     del_codes = list(set(codes.split(';')))
     new_codes = [code for code in personal_select if code not in del_codes]
@@ -197,8 +231,8 @@ def del_optional(request):
 
 
 # 对自选数据排序
-@api_view(['POST'])
-@permission_classes((IsAuthenticated, ))
+# @api_view(['POST'])
+# @permission_classes((IsAuthenticated, ))
 def sort_optional(request):
     sort_type = request.POST.get('sort_type', '1')
     page = request.POST.get('page', str(OPTINOAL_PAGE))
@@ -207,7 +241,16 @@ def sort_optional(request):
         return JsonResponse(get_response_data('000002'))
     page = int(page)
     page_num = int(page_num)
-    jh_user = Jh_User.objects.get(user=request.user)
+    # 判断用户是否登录
+    rval, user_id = is_auth(request.META)
+    _logger.info('user is auth? {0}, user id is {1}'.format(rval, user_id))
+    if rval:
+        jh_user = Jh_User.objects.get(user=user_id)  # 已注册用户
+    elif user_id is not None:
+        jh_user = Jh_User.objects.get(id=user_id)  # 游客
+    else:
+        return JsonResponse(get_response_data('000007'))
+    # jh_user = Jh_User.objects.get(user=request.user)
     personal_select = jh_user.personal_select
     if sort_type == '1':  # 移动单个选项
         wine_code = request.POST.get('code', '')
@@ -570,7 +613,7 @@ def detail(request):
         if lastest_price == 0:
             lastest_price = pre_price
         increase = lastest_price - pre_price
-        increase_ratio = '{:.2f}%'.format(increase / pre_price)
+        increase_ratio = '{:.2f}%'.format(increase / pre_price * 100)
     else:
         increase = lastest_price
         increase_ratio = '0.00%'
