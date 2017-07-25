@@ -40,11 +40,10 @@ def is_valid(body, params_list):
 
 # 判断是否登录用户,并返回登录用户（游客用户）id
 def is_auth(meta):
+    token = ''
     rval = True
     if not isinstance(meta, dict):
         return False, None
-    if not meta.get('HTTP_AUTHORIZATION'):
-        rval = False
     try:
         token = meta['HTTP_AUTHORIZATION'].split(' ')[1]
     except Exception:
