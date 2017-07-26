@@ -830,7 +830,12 @@ def history_commission(request):
         user=jh_user, create_at__lt=today_start).order_by('-create_at')[start:end]
     commissions_json = []
     for commission in commissions:
-        commissions_json.append(commission.to_json())
+        tmp_json = commission.to_json()
+        if commission.status == 0:
+            commission.status = 3
+            commission.save()
+            tmp_json['status'] = 3
+        commissions_json.append(tmp_json)
     return JsonResponse(get_response_data('000000', commissions_json))
 
 
