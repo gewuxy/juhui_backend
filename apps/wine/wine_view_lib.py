@@ -97,6 +97,9 @@ def forchart(request):
     if start_deals.count() != 0:
         start_deal['open_price'] = start_deals[0].price
         start_deal['last_price'] = start_deals[0].price
+        start_deal['high_price'] = start_deals[0].price
+        start_deal['low_price'] = start_deals[0].price
+        start_deal['close_price'] = start_deals[0].price
 
     for deal in Deal.objects.filter(
             wine=wine,
