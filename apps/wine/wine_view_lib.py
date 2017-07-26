@@ -88,7 +88,7 @@ def forchart(request):
             create_at__lte=now).order_by('create_at'):
         print('======price=====')
         print('{0}'.format(deal.price))
-        timestamp = str(int(time.mktime(deal.create_at.timetuple())))
+        timestamp = str(int(time.mktime(deal.create_at.replace(second=0, microsecond=0).timetuple())))
         if not tmp_data.get(timestamp):
             tmp_data[timestamp] = {}
             tmp_data[timestamp]['open_price'] = deal.price
