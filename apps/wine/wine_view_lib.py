@@ -82,6 +82,22 @@ def forchart(request):
         return JsonResponse(get_response_data('000002'))
     start_datetime = now - datetime.timedelta(days=delta - 1)
     start_datetime = start_datetime.replace(hour=0, minute=0, second=0, microsecond=0)
+
+    # 时间起点数据
+    start_timestamp = str(int(time.mktime(start_datetime.timetuple())))
+    start_deal = {}
+    start_deal['timestamp'] = start_timestamp
+    start_deal['open_price'] = 0
+    start_deal['close_price'] = 0
+    start_deal['last_price'] = 0
+    start_deal['high_price'] = 0
+    start_deal['low_price'] = 0
+    start_deal['num'] = 0
+    start_deals = Deal.objects.filter(wine=wine, create_at__lt=start_datetime).order_by('-create_at')
+    if start_deals.count() != 0:
+        start_deal['open_price'] = start_deals[0].price
+        start_deal['last_price'] = start_deals[0].price
+
     for deal in Deal.objects.filter(
             wine=wine,
             create_at__gte=start_datetime,
@@ -108,6 +124,8 @@ def forchart(request):
                 tmp_data[timestamp]['low_price'] = deal.price
             tmp_data[timestamp]['timestamp'] = timestamp
         data[timestamp] = tmp_data[timestamp]
+    if not data.get(start_timestamp):
+        data[start_timestamp] = start_deal
     data_list = list(data.values())
     data_list.sort(key=lambda x:x['timestamp'])
     return JsonResponse(get_response_data('000000', data_list))

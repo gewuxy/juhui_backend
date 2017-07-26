@@ -119,7 +119,7 @@ def create_commission_1(request):
 
         # 请求卖出接口
         sell_url = request.build_absolute_uri('/api/wine/sell/')
-        headers = {'Authorization': 'Bearer {0}'.format(token)}
+        headers = {'Authorization': 'Bearer {0}'.format(token), 'DEVICEUUID': mobile}
         data = {'code': '', 'price': '', 'num': ''}
         try:
             position = Position.objects.get(user=user)
@@ -157,7 +157,7 @@ def create_commission_0(request):
 
         # 请求买入接口
         sell_url = request.build_absolute_uri('/api/wine/buy/')
-        headers = {'Authorization': 'Bearer {0}'.format(token)}
+        headers = {'Authorization': 'Bearer {0}'.format(token), 'DEVICEUUID': mobile}
         data = {'code': '', 'price': '', 'num': ''}
         wine = choice(WineInfo.objects.all())
         data['code'] = wine.code
