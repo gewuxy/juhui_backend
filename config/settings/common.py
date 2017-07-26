@@ -14,11 +14,12 @@ APPS_DIR = ROOT_DIR.path('apps')
 env = environ.Env()
 env.read_env()
 
-STATIC_ROOT = str(ROOT_DIR('staticfiles'))
+STATIC_ROOT = str(ROOT_DIR('static'))
 STATIC_URL = '/static/'
-STATICFILES_DIRS = (
-    str(APPS_DIR.path('static')),
-)
+# STATICFILES_DIRS = (
+    # str(APPS_DIR.path('static')),
+#     STATIC_ROOT,
+# )
 STATICFILES_FINDERS = (
     'django.contrib.staticfiles.finders.FileSystemFinder',
     'django.contrib.staticfiles.finders.AppDirectoriesFinder',

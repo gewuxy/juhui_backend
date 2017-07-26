@@ -49,7 +49,7 @@ app.post('/emit_select/', function(req, res){
 
 io.on('connection', function(socket){
     console.log('a user connected');
-    code = socket.handshake.query.code;
+    var code = socket.handshake.query.code;
     console.log('code is ' + code);
     // 推送人气数和自选数
     popularity_key = 'juhui_chat_popularity_' + code
@@ -72,6 +72,7 @@ io.on('connection', function(socket){
     console.log('emit popular_select_data: ' + popular_select_data)
     
     socket.on(code, function(msg){
+        console.log('socket.on code is ', code)
         msg['is_msg'] = '1'
         io.emit(code, msg);
         client.publish('save_msg', JSON.stringify(msg));
@@ -85,6 +86,7 @@ io.on('connection', function(socket){
             select_val = Number(select_val);
         }else{
             select_val = 0;
+        }
         console.log('user disconnected');
         io.emit(code, {'is_msg': '0', 'popularity': popularity_val, 'select': select_val});
     });
