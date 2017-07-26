@@ -112,7 +112,8 @@ def create_commission_1(request):
             'client_secret': client_secret
         }
         login_url = request.build_absolute_uri('/api/account/login/')
-        r = requests.post(url=login_url, data=data)
+        headers = {'DEVICEUUID': mobile}
+        r = requests.post(url=login_url, data=data, headers=headers)
         print('======login result is ======')
         print(r.json())
         token = r.json()['data']['token']
@@ -122,7 +123,7 @@ def create_commission_1(request):
         headers = {'Authorization': 'Bearer {0}'.format(token), 'DEVICEUUID': mobile}
         data = {'code': '', 'price': '', 'num': ''}
         try:
-            position = Position.objects.get(user=user)
+            position = choice(Position.objects.filter(user=user))
         except Exception:
             return JsonResponse(get_response_data('000002'))
         data['code'] = position.wine.code
@@ -150,7 +151,8 @@ def create_commission_0(request):
             'client_secret': client_secret
         }
         login_url = request.build_absolute_uri('/api/account/login/')
-        r = requests.post(url=login_url, data=data)
+        headers = {'DEVICEUUID': mobile}
+        r = requests.post(url=login_url, data=data, headers=headers)
         print('======login result is ======')
         print(r.json())
         token = r.json()['data']['token']

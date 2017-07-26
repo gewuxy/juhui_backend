@@ -373,6 +373,20 @@ def my_position(request):
     position_list = []  # 持仓详情
     today_start = datetime.datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
     jh_user = Jh_User.objects.get(user=request.user)
+
+    # 将历史可撤委托单中的卖出资产重新插入到资产表中
+    old_comm = Commission.objects.filter(
+        trade_direction=1,
+        user=jh_user,
+        status=0,
+        create_at__lt=today_start
+    )
+    for comm in old_comm:
+        comm.status = 2
+        pos = Position(wine=comm.wine, user=jh_user, price=comm.price, num=comm.num)
+        pos.save()
+        comm.save()
+
     jh_user_position = Position.objects.filter(user=jh_user).order_by('-create_at')
     for jup in jh_user_position:
         deals = Deal.objects.filter(wine=jup.wine).order_by('-create_at')

@@ -1,6 +1,6 @@
 # -*- coding: utf8 -*-
 from django.http import JsonResponse
-from django.db.models import Q
+from django.db.models import Q, Sum
 from apps.account.models import Jh_User
 from apps.wine.models import WineInfo
 from apps.wine.models import Commission, Deal, Position
@@ -309,15 +309,44 @@ def sell(request):
         return JsonResponse(get_response_data('000002'))
 
     jh_user = Jh_User.objects.get(user=request.user)
-    try:
-        position = Position.objects.get(user=jh_user, wine=wine)
-    except Exception as e:
-        _logger.info('error msg is {0}'.format(e))
+
+    # 将历史可撤委托单中的资产重新插入到资产表中
+    today_start = datetime.datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+    old_comm = Commission.objects.filter(
+        wine=wine,
+        trade_direction=1,
+        user=jh_user,
+        status=0,
+        create_at__lt=today_start
+    )
+    for comm in old_comm:
+        comm.status = 2
+        pos = Position(wine=wine, user=jh_user, price=comm.price, num=comm.num)
+        pos.save()
+        comm.save()
+
+    # 查询个人资产表，是否持仓充足
+    positions = Position.objects.filter(user=jh_user, wine=wine, num__gt=0).order_by('-num')
+    total_num = positions.aggregate(Sum('num'))
+    if not total_num.get('num__sum'):
         return JsonResponse(get_response_data('100002'))
-    if position.num < num:
+    elif total_num.get('num__sum') < num:
         return JsonResponse(get_response_data('100002'))
-    position.num -= num
-    position.save()
+    else:
+        tmp_num = num
+        for position in positions:
+            if tmp_num == 0:
+                break
+            elif position.num >= tmp_num:
+                position.num -= tmp_num
+                position.save()
+                tmp_num = 0
+                break
+            else:
+                position.num = 0
+                position.save()
+                tmp_num = num - position.num
+
     commission_order = Commission(
         wine=wine,
         trade_direction=1,
@@ -479,6 +508,9 @@ def buy(request):
                 num=order.num
             )
             deal.save()
+            # 将成交的红酒插入到资产表中
+            new_position = Position(wine=wine, user=jh_user, price=order.price, num=order.num)
+            new_position.save()
             # 修改WineInfo中的价格proposed_price
             res_change = change_price(wine.code, order.price)
             if res_change:
@@ -507,6 +539,9 @@ def buy(request):
                 num=num
             )
             deal.save()
+            # 将成交的红酒插入到资产表中
+            new_position = Position(wine=wine, user=jh_user, price=order.price, num=order.num)
+            new_position.save()
             # 修改WineInfo中的价格proposed_price
             res_change = change_price(wine.code, order.price)
             if res_change:
@@ -833,6 +868,8 @@ def history_commission(request):
         tmp_json = commission.to_json()
         if commission.status == 0:
             commission.status = 3
+            new_position = Position(wine=commission.wine, user=jh_user, price=commission.price, num=commission.num)
+            new_position.save()
             commission.save()
             tmp_json['status'] = 3
         commissions_json.append(tmp_json)
