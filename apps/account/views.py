@@ -387,7 +387,7 @@ def my_position(request):
         pos.save()
         comm.save()
 
-    jh_user_position = Position.objects.filter(user=jh_user).order_by('-create_at')
+    jh_user_position = Position.objects.filter(user=jh_user, num__gt=0).order_by('-create_at')
     for jup in jh_user_position:
         deals = Deal.objects.filter(wine=jup.wine).order_by('-create_at')
         if deals.count() == 0:
@@ -406,6 +406,7 @@ def my_position(request):
         float_profit_loss += profit_loss  # 浮动盈亏计算
         position_list.append({
             'code': jup.wine.code,
+            'name': jup.wine.name,
             'profit_loss': profit_loss,
             'profit_loss_ratio': profit_loss_ratio,
             'num': jup.num
