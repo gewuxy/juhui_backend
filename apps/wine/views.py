@@ -290,6 +290,23 @@ def sort_optional(request):
         return JsonResponse(get_response_data('000000', data))
 
 
+def _reduce_position(user, wine, num):  # 减少持仓
+    tmp_num = num
+    positions = Position.objects.filter(user=user, wine=wine, num__gt=0).order_by('-num')
+    for position in positions:
+        if tmp_num == 0:
+            break
+        elif position.num >= tmp_num:
+            position.num -= tmp_num
+            position.save()
+            tmp_num = 0
+            break
+        else:
+            position.num = 0
+            position.save()
+            tmp_num = num - position.num
+
+
 # 卖出
 @api_view(['POST'])
 @permission_classes((IsAuthenticated, ))
@@ -311,6 +328,7 @@ def sell(request):
     jh_user = Jh_User.objects.get(user=request.user)
 
     # 将历史可撤委托单中的资产重新插入到资产表中
+    '''
     today_start = datetime.datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
     old_comm = Commission.objects.filter(
         wine=wine,
@@ -324,6 +342,7 @@ def sell(request):
         pos = Position(wine=wine, user=jh_user, price=comm.price, num=comm.num)
         pos.save()
         comm.save()
+    '''
 
     # 查询个人资产表，是否持仓充足
     positions = Position.objects.filter(user=jh_user, wine=wine, num__gt=0).order_by('-num')
@@ -333,6 +352,8 @@ def sell(request):
     elif total_num.get('num__sum') < num:
         return JsonResponse(get_response_data('100002'))
     else:
+        pass
+        '''
         tmp_num = num
         for position in positions:
             if tmp_num == 0:
@@ -346,6 +367,7 @@ def sell(request):
                 position.num = 0
                 position.save()
                 tmp_num = num - position.num
+        '''
 
     commission_order = Commission(
         wine=wine,
@@ -436,9 +458,11 @@ def sell(request):
             num = 0
             break
     if num > 0:
+        _reduce_position(user=jh_user, wine=wine, num=commission_order.num - num)
         commission_order.num = num
     else:
         commission_order.status = 2
+        _reduce_position(user=jh_user, wine=wine, num=commission_order.num)
     commission_order.save()
     return JsonResponse(get_response_data('000000'))
 
@@ -508,7 +532,9 @@ def buy(request):
                 num=order.num
             )
             deal.save()
-            # 将成交的红酒插入到资产表中
+            # 从卖家资产中减去成交量
+            _reduce_position(user=order.user, wine=wine, num=order.num)
+            # 将成交的红酒插入到买家资产表中
             new_position = Position(wine=wine, user=jh_user, price=order.price, num=order.num)
             new_position.save()
             # 修改WineInfo中的价格proposed_price
@@ -539,6 +565,8 @@ def buy(request):
                 num=num
             )
             deal.save()
+            # 从卖家资产中减去成交量
+            _reduce_position(user=order.user, wine=wine, num=num)
             # 将成交的红酒插入到资产表中
             new_position = Position(wine=wine, user=jh_user, price=order.price, num=order.num)
             new_position.save()
@@ -868,8 +896,8 @@ def history_commission(request):
         tmp_json = commission.to_json()
         if commission.status == 0:
             commission.status = 3
-            new_position = Position(wine=commission.wine, user=jh_user, price=commission.price, num=commission.num)
-            new_position.save()
+            # new_position = Position(wine=commission.wine, user=jh_user, price=commission.price, num=commission.num)
+            # new_position.save()
             commission.save()
             tmp_json['status'] = 3
         commissions_json.append(tmp_json)

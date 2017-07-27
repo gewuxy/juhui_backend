@@ -375,6 +375,7 @@ def my_position(request):
     jh_user = Jh_User.objects.get(user=request.user)
 
     # 将历史可撤委托单中的卖出资产重新插入到资产表中
+    '''
     old_comm = Commission.objects.filter(
         trade_direction=1,
         user=jh_user,
@@ -386,6 +387,7 @@ def my_position(request):
         pos = Position(wine=comm.wine, user=jh_user, price=comm.price, num=comm.num)
         pos.save()
         comm.save()
+    '''
 
     jh_user_position = Position.objects.filter(user=jh_user, num__gt=0).order_by('-create_at')
     for jup in jh_user_position:
