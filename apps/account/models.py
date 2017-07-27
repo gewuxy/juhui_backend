@@ -29,8 +29,8 @@ class Jh_User(models.Model):
     class Meta:
         db_table = 'account_jh_user'
 
-    def __unicode__(self):
-        return '{0}\[{1}\]'.format(self.phone, self.nickname)
+    def __str__(self):
+        return '{0}[{1}]'.format(self.nickname, self.mobile)
 
     def get_role_name(self):
         role_map = dict([('0', '普通人员'), ('1', '管理人员')])

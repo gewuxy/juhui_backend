@@ -16,8 +16,8 @@ class WineInfo(models.Model):
     class Meta:
         db_table = 'wine_info'
 
-    def __unicode__(self):
-        return '{0}\({1}\)'.format(self.name, self.code)
+    def __str__(self):
+        return '{0}({1})'.format(self.name, self.code)
 
     def to_json(self):
         fields = []
@@ -63,6 +63,12 @@ class Commission(models.Model):
     create_at = models.DateTimeField(auto_now_add=True, verbose_name='委托时间')
     update_at = models.DateTimeField(auto_now=True, verbose_name='修改时间')
 
+    class Meta:
+        db_table = 'wine_commission'
+
+    def __str__(self):
+        return '{0}({1})'.format(self.wine.name, self.user.nickname)
+
     def to_json(self):
         d = {}
         d['id'] = self.id
@@ -90,6 +96,12 @@ class Deal(models.Model):
     num = models.IntegerField(verbose_name='成交数量', default=1)
     create_at = models.DateTimeField(auto_now_add=True, verbose_name='成交时间')
 
+    class Meta:
+        db_table = 'wine_deal'
+
+    def __str__(self):
+        return '{0}({1})'.format(self.wine.name, self.price)
+
     def to_json(self):
         d = {}
         d['wine_code'] = self.wine.code
@@ -113,3 +125,9 @@ class Position(models.Model):
     price = models.FloatField(verbose_name='开仓价')
     num = models.IntegerField(verbose_name='持仓量', default=1)
     create_at = models.DateTimeField(auto_now_add=True, verbose_name='创建时间')
+
+    class Meta:
+        db_table = 'wine_position'
+
+    def __str__(self):
+        return '{0}({1})'.format(self.wine.name, self.user.nickname)
