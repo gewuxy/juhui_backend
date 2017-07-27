@@ -173,7 +173,7 @@ def k_line(request):
         if period[-1] == 'm':
             delta = int(period[:-1])
         elif period[-1] == 'd':
-            delta = 60 * int(period[:-1])
+            delta = 24 * 60 * int(period[:-1])
     except Exception:
         delta = 1
 
@@ -186,10 +186,7 @@ def k_line(request):
             wine=wine,
             create_at__gte=start_at,
             create_at__lte=now).order_by('-create_at'):
-        print('======price=====')
-        print('{0}'.format(deal.price))
-        timestamp = str(int(time.mktime(deal.create_at.timetuple())))
-        if delta == 30 * 60:
+        if delta == 30 * 24 * 60:  # 月K
             last_day_num = calendar.monthrange(
                 deal.create_at.year, deal.create_at.month)[1]
             create_at = deal.create_at.replace(day=last_day_num)
@@ -199,12 +196,15 @@ def k_line(request):
             else:
                 # date_str = create_at.strftime('%Y-%m-%d')
                 date_str = str(int(time.mktime(create_at.timetuple())))
-
-        else:
-            delta_minutes = (now - deal.create_at).seconds // 60
-            create_at = now - datetime.timedelta(
-                days=delta_minutes // delta * delta)
+        elif delta <= 60:  # 1／5／15／30／60分钟
+            minute = deal.create_at.minute // delta * delta
+            create_at = deal.create_at.replace(minute=minute, second=0, microsecond=0)
             date_str = str(int(time.mktime(create_at.timetuple())))
+        elif delta == 24 * 60:  # 日K
+            date_str = str(int(time.mktime(deal.create_at.date().timetuple())))
+        else:  # 周K
+            create_at = datetime.timedelta(days=(deal.create_at - start_at).days //7 * 7) + start_at
+            date_str = str(int(time.mktime(create_at.date().timetuple())))
         if not tmp_data.get(date_str):
             tmp_data[date_str] = {}
             tmp_data[date_str]['open_price'] = deal.price
@@ -218,7 +218,6 @@ def k_line(request):
             else:
                 tmp_data[date_str]['turnover_rate'] = '{:.2f}%'.format(
                     deal.num / all_wine_coount * 100)
-
         else:
             tmp_data[date_str]['deal_count'] += deal.num
             tmp_data[date_str]['open_price'] = deal.price
@@ -231,7 +230,7 @@ def k_line(request):
                 tmp_data[date_str]['turnover_rate'] = '0.00%'
             else:
                 tmp_data[date_str]['turnover_rate'] = '{:.2f}%'.format(
-                    tmp_data[date_str]['deal_count'] / all_wine_coount * 100)
+                    int(tmp_data[date_str]['deal_count']) / all_wine_coount * 100)
         data[date_str] = tmp_data[date_str]
     data_list = list(data.values())
     data_list.sort(key=lambda x: x['timestamp'])
