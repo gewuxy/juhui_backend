@@ -23,7 +23,7 @@ app.get('/', function(req, res){
 app.post('/last_price/', function(req, res){
     console.log('enter last_price')
     data = req.body;
-    console.log(data);
+    //console.log(data);
     io.emit('last_price', data);
     res.send("000000")
 });
@@ -32,7 +32,7 @@ app.post('/send_msg/', function(req, res){
     console.log('enter send_msg');
     data = req.body;
     code = data.code;
-    console.log('code: ' + code + 'data: ' + data);
+    //console.log('code: ' + code + 'data: ' + data);
     io.emit(code, data);
     client.publish('save_msg',JSON.stringify(data))
     res.send({'code': '000000', 'msg': 'SUCCESS', 'data': {}});
@@ -41,7 +41,7 @@ app.post('/send_msg/', function(req, res){
 app.post('/emit_select/', function(req, res){
     console.log('enter emit_select');
     data = req.body;
-    console.log('req.data: ' + data);
+    //console.log('req.data: ' + data);
     code = data.code;
     io.emit(code, {'is_msg': '0', 'popularity': data.popularity, 'select': data.select})
     res.send('000000');
@@ -54,9 +54,12 @@ io.on('connection', function(socket){
     // 推送人气数和自选数
     popularity_key = 'juhui_chat_popularity_' + code
     popularity_val = client.get(popularity_key)
-    if (popularity_val){
+    if (popularity_val && typeof(code)==="undefined"){
         popularity_val = Number(popularity_val) + 1
     }else{
+        popularity_val = 1
+    }
+    if(popularity_val < 1){
         popularity_val = 1
     }
     client.set(popularity_key, popularity_val);
@@ -76,9 +79,10 @@ io.on('connection', function(socket){
         msg['is_msg'] = '1'
         io.emit(code, msg);
         client.publish('save_msg', JSON.stringify(msg));
-        console.log('message: ' + JSON.stringify(msg) + '===' + code + '====');
+        //console.log('message: ' + JSON.stringify(msg) + '===' + code + '====');
     });
     socket.on('disconnect', function(){
+        console.log('dis code is ', code);
         popularity_val = client.get(popularity_key);
         popularity_val = Number(popularity_val) - 1;
         select_val = client.get(select_key);

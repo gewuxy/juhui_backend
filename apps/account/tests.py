@@ -127,7 +127,7 @@ def create_commission_1(request):
         except Exception:
             return JsonResponse(get_response_data('000002'))
         data['code'] = position.wine.code
-        data['price'] = randint(500, 1000)
+        data['price'] = 500 + randint(-200, 200)
         data['num'] = randint(1, 5)
         r = requests.post(url=sell_url, data=data, headers=headers)
         print('========sell result is========')
@@ -163,7 +163,7 @@ def create_commission_0(request):
         data = {'code': '', 'price': '', 'num': ''}
         wine = choice(WineInfo.objects.all())
         data['code'] = wine.code
-        data['price'] = randint(500, 1000)
+        data['price'] = 500 + randint(-200, 200)
         data['num'] = randint(1, 50)
         r = requests.post(url=sell_url, data=data, headers=headers)
         print('========buy result is========')

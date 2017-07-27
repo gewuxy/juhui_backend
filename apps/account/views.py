@@ -279,7 +279,7 @@ def send_sms(request):
         host=REDIS['HOST'], port=REDIS['PORT'], db=1)
     redis_key = 'juhui_sms_code_' + mobile
     redis_client.set(redis_key, param_code)
-    redis_client.expire(redis_key, param_expire)
+    redis_client.expire(redis_key, param_expire * 60)
 
     resp = _SendSms(extend, sms_type, sign_name, param, mobile, sms_template)
     res = get_response_data('000000')
