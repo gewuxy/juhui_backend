@@ -10,7 +10,7 @@ class WineInfo(models.Model):
     code = models.CharField(max_length=16, verbose_name='交易代码')
     name = models.CharField(max_length=64, verbose_name='名称')
     winery = models.CharField(max_length=64, verbose_name='酒庄', default='')
-    proposed_price = models.FloatField(verbose_name='参考价格')
+    proposed_price = models.FloatField(verbose_name='初始价格')
     is_delete = models.BooleanField(default=False, verbose_name='是否无效酒')
 
     class Meta:

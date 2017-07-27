@@ -1,6 +1,10 @@
 from django.contrib import admin
 from apps.wine.models import Position, WineInfo, Commission, Deal
 
+admin.AdminSite.index_title ='巨汇金融'
+admin.AdminSite.site_header ='巨汇金融后台'
+admin.AdminSite.site_title = '巨汇金融'
+
 class PositionAdmin(admin.ModelAdmin):
     list_display = ['wine_info_name', 'owner', 'price', 'num']
     search_fields = ['wine__name', 'user__nickname', 'user__mobile']
@@ -17,6 +21,7 @@ class CommissionAdmin(admin.ModelAdmin):
         'commission_status', 'create_at', 'update_at'
     ]
     search_fields = ['wine__name', 'user__nickname', 'user__mobile', ]
+    list_filter = ['status', 'trade_direction']
 
     def wine_info_name(self, obj):
         return u'%s' % obj.wine.name
