@@ -4,7 +4,8 @@ import requests
 import traceback
 
 NEWS_FROM = 'http://www.wines-info.com/'
-NEWS_SAVE = 'https://jh.qiuxiaokun.com/api/news/insert/'
+# NEWS_SAVE = 'https://jh.qiuxiaokun.com/api/news/insert/'
+NEWS_SAVE = 'http://127.0.0.1:9991/api/news/insert/'
 
 
 def get_news():
@@ -19,6 +20,7 @@ def get_news():
     href = ''  # 链接
     thumb_img = ''  # 缩略图
     news_time = ''  # 信息源时间
+    article = ''  # 文章
     try:
         for content in index_tags[0].ul.contents:
             if content == '\n':
@@ -30,6 +32,8 @@ def get_news():
                 continue
             soup_page = BeautifulSoup(r_page.content, 'html.parser')
             article_tags = soup_page.find_all(attrs={"class": "article-details-info"})
+            article = str(article_tags[0])
+            # break
             img = article_tags[0].find('img')
             if not img:
                 continue
@@ -41,7 +45,8 @@ def get_news():
                 'title': title,
                 'href': href,
                 'thumb_img': thumb_img,
-                'news_time': news_time
+                'news_time': news_time,
+                'article': article
             }
             print(data)
             r_save = requests.post(NEWS_SAVE, data=data)

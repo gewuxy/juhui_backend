@@ -7,6 +7,7 @@ class NewsInfo(models.Model):
     '''
     title = models.CharField(max_length=100, verbose_name='标题')
     href = models.CharField(max_length=255, verbose_name='链接')
+    article = models.TextField(verbose_name='文章', default='')
     thumb_img = models.CharField(max_length=255, verbose_name='缩略图')
     news_time = models.DateTimeField(verbose_name='新闻源时间')
     create_at = models.DateTimeField(auto_now_add=True, verbose_name='创建时间')
@@ -21,6 +22,7 @@ class NewsInfo(models.Model):
         d = {}
         d['title'] = self.title
         d['href'] = self.href
+        d['article'] = self.article
         d['thumb_img'] = self.thumb_img
         d['news_time'] = self.news_time.strftime('%Y/%m/%d %H:%M')
         return d
