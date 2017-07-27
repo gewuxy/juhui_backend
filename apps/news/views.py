@@ -29,17 +29,20 @@ def insert_news(request):
 # 读取资讯
 def get_news(request):
     try:
-        num = int(request.POST.get('num', 15))
+        page = int(request.POST.get('page', 1))
+        page_num = int(request.POST.get('page_num', 10))
     except Exception:
         return JsonResponse(get_response_data('000002'))
+    start = (page - 1) * page_num
+    end = page * page_num
     news = NewsInfo.objects.all().order_by('-news_time')
     data = []
     titles = []
     for n in news:
-        if len(data) == num:
+        if len(data) == end:
             break
         if n.title in titles:
             continue
         data.append(n.to_json())
         titles.append(n.title)
-    return JsonResponse(get_response_data('000000', data))
+    return JsonResponse(get_response_data('000000', data[start:end]))
