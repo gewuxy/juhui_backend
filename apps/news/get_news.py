@@ -4,8 +4,8 @@ import requests
 import traceback
 
 NEWS_FROM = 'http://www.wines-info.com/'
-# NEWS_SAVE = 'https://jh.qiuxiaokun.com/api/news/insert/'
-NEWS_SAVE = 'http://127.0.0.1:9991/api/news/insert/'
+NEWS_SAVE = 'https://jh.qiuxiaokun.com/api/news/insert/'
+# NEWS_SAVE = 'http://127.0.0.1:9991/api/news/insert/'
 
 
 def get_news():
