@@ -11,6 +11,8 @@ class NewsInfo(models.Model):
     thumb_img = models.CharField(max_length=255, verbose_name='缩略图')
     news_time = models.DateTimeField(verbose_name='新闻源时间')
     create_at = models.DateTimeField(auto_now_add=True, verbose_name='创建时间')
+    origin = models.CharField(max_length=32, verbose_name='来源', default='')
+    author = models.CharField(max_length=64, verbose_name='作者', default='')
 
     class Meta:
         db_table = 'news_info'
@@ -25,4 +27,6 @@ class NewsInfo(models.Model):
         d['article'] = self.article
         d['thumb_img'] = self.thumb_img
         d['news_time'] = self.news_time.strftime('%Y/%m/%d %H:%M')
+        d['origin'] = self.origin
+        d['author'] = self.author
         return d

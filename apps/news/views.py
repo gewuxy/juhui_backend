@@ -15,13 +15,16 @@ def insert_news(request):
     news_time = request.POST.get('news_time')
     href = request.POST.get('href')
     article = request.POST.get('article')
+    origin = request.POST.get('origin')
+    author = request.POST.get('author')
     if not (title and href):
         return JsonResponse(get_response_data('000002'))
     try:
         news_time = datetime.datetime.strptime(news_time, '%Y-%m-%d %H:%M')
     except Exception:
         news_time = datetime.datetime.now()
-    news_info = NewsInfo(title=title, href=href, article=article, thumb_img=thumb_img, news_time=news_time)
+    news_info = NewsInfo(title=title, href=href, article=article, thumb_img=thumb_img, news_time=news_time,
+                         origin=origin, author=author)
     news_info.save()
     return JsonResponse(get_response_data('000000'))
 

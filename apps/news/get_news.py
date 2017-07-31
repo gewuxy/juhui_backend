@@ -39,14 +39,20 @@ def get_news():
                 continue
             thumb_img = img['src']
             time_tags = soup_page.find_all(attrs={"class": "release-author"})
-            news_time = time_tags[0].div.span.string
+            # news_time = time_tags[0].div.span.string
+            time_origin_author = time_tags[0].div.contents
+            news_time = time_origin_author[1].string
+            origin = time_origin_author[3].string
+            author = time_origin_author[5].string
 
             data = {
                 'title': title,
                 'href': href,
                 'thumb_img': thumb_img,
                 'news_time': news_time,
-                'article': article
+                'article': article,
+                'origin': origin,
+                'author': author
             }
             print(data)
             r_save = requests.post(NEWS_SAVE, data=data)
