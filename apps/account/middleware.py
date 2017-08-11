@@ -9,7 +9,7 @@ _logger = logging.getLogger('Oauth2Middleware')
 class Oauth2Middleware(object):
 
     def process_response(self, request, response):
-        _logger.info('response is {0}'.format(response.content))
+        # _logger.info('response is {0}'.format(response.content))
         try:
             r = json.loads(response.content.decode('utf8'))
         except Exception:

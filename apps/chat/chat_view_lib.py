@@ -28,8 +28,10 @@ def set_video_img_1(from_path, to_path):
         return False
 
 
-# 自选信息初始化接口
 def first_set_select_redis(request):
+    '''
+    自选信息初始化接口，用于公众号中自选数
+    '''
     select_data = {}
     for user in Jh_User.objects.all():
         codes = user.personal_select

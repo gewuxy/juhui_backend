@@ -8,8 +8,10 @@ import requests
 import datetime
 
 
-# 资讯入库
 def insert_news(request):
+    '''
+    将爬取到的葡萄酒资讯存入到数据库
+    '''
     title = request.POST.get('title')
     thumb_img = request.POST.get('thumb_img')
     news_time = request.POST.get('news_time')
@@ -29,8 +31,10 @@ def insert_news(request):
     return JsonResponse(get_response_data('000000'))
 
 
-# 读取资讯
 def get_news(request):
+    '''
+    从数据库中获取最新资讯
+    '''
     try:
         page = int(request.POST.get('page', 1))
         page_num = int(request.POST.get('page_num', 10))

@@ -11,6 +11,7 @@ GET_DETAIL_INFO = 'https://jh.qiuxiaokun.com/api/wine/detail/'
 EMIT_DETAIL_INFO = 'http://39.108.142.204:8001/last_price/'
 
 
+# 请求url（/o/token/）获取access_token，并将它存到redis中
 def get_access_token(url, username, password, client_id, client_secret):
     data = {
         'username': username,
@@ -27,6 +28,7 @@ def get_access_token(url, username, password, client_id, client_secret):
     return token_info
 
 
+# 存储公众号中的聊天记录
 def save_chat_msg(user_id, wine_code, msg_type, content, video_img, create_at):
     data = {
         'user_id': user_id,
@@ -52,6 +54,7 @@ def save_chat_msg(user_id, wine_code, msg_type, content, video_img, create_at):
         return False
 
 
+# 获取最新详情数据，用于广播
 def get_detail_info(code):
     print('enter get_detal_info===')
     data = {
@@ -74,7 +77,7 @@ def get_detail_info(code):
 
 def listen():
     ps = REDIS_CLIENT.pubsub()
-    ps.subscribe(['save_msg', 'last_price'])
+    ps.subscribe(['save_msg', 'last_price', 'token'])
     for item in ps.listen():
         print('item is {0}'.format(item))
         if item['type'] == 'message':
@@ -83,7 +86,16 @@ def listen():
             try:
                 params = json.loads(params.decode('utf8').replace('\'', '\"'))
                 print('params is {0}'.format(params))
-                if item['channel'].decode('utf8') == 'save_msg':
+                if item['channel'].decode('utf8') == 'token':
+                    token_info = get_access_token(
+                        params['url'],
+                        params['username'],
+                        params['password'],
+                        params['client_id'],
+                        params['client_secret']
+                    )
+                    print('username access_token is {0}'.format(token_info))
+                elif item['channel'].decode('utf8') == 'save_msg':
                     save_info = save_chat_msg(
                         params['user_id'],
                         params['wine_code'],

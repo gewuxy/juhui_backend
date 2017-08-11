@@ -14,8 +14,11 @@ import json
 _logger = logging.getLogger('wine_view_lib')
 REDIS_CLIENT = redis.StrictRedis(host='localhost', port=6379, db=1)
 
-# 获取涨跌幅数据
 def _get_quotes():
+    '''
+    获取涨跌幅数据
+    :return: 涨幅列表，跌幅列表
+    '''
     high_ratio_codes = []
     low_ratio_codes = []
     today_start = datetime.datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
@@ -45,8 +48,10 @@ def _get_quotes():
     return high_ratio_codes, low_ratio_codes
 
 
-# 获取分时图数据
 def forchart(request):
+    '''
+    获取分时图数据
+    '''
     wine_code = request.POST.get('code')
     period = request.POST.get('period', '1d')
     now = request.POST.get('now')
@@ -134,8 +139,10 @@ def forchart(request):
     return JsonResponse(get_response_data('000000', data_list))
 
 
-# 获取K线图数据
 def k_line(request):
+    '''
+    获取K线图数据
+    '''
     wine_code = request.POST.get('code')
     period = request.POST.get('period')
     now = request.POST.get('now')
@@ -237,8 +244,10 @@ def k_line(request):
     return JsonResponse(get_response_data('000000', data_list))
 
 
-# 获取行情数据
 def quotes(request):
+    '''
+    获取行情数据
+    '''
     high, low = _get_quotes()
     data = {'high_ratio': [], 'low_ratio': []}
     for i in range(10):
@@ -261,14 +270,22 @@ def quotes(request):
     return JsonResponse(get_response_data('000000', data))
 
 
-# 最新价格广播
 def price_emit(code, timestamp):
+    '''
+    :param code: 红酒code
+    :param timestamp: 时间戳
+    :return: 广播该红酒此时的最新详情数据
+    '''
     REDIS_CLIENT.publish('last_price', json.dumps({'code': code, 'time': timestamp}))
     return True
 
 
-# 修改红酒的参考价
 def change_price(code, price):
+    '''
+    :param code: 红酒code
+    :param price: 价格
+    :return: 修改红酒的初始价格
+    '''
     try:
         wine = WineInfo.objects.get(code=code)
         wine.proposed_price = float(price)
@@ -278,8 +295,12 @@ def change_price(code, price):
         return False
 
 
-# 自选数据的广播，主要用于公众号中自选数据的实时更新
 def select_emit(code, operation):
+    '''
+    :param code: 红酒code
+    :param operation: add／delete
+    :return: 向公众号广播该红酒的自选数
+    '''
     select_key = 'juhui_chat_select_' + code
     select_val = REDIS_CLIENT.get(select_key)
     if select_val:
@@ -314,8 +335,11 @@ def select_emit(code, operation):
         return False
 
 
-# 获取最新价格和涨幅数据
 def last_price_ratio(code):
+    '''
+    :param code: 红酒code
+    :return: 获取该红酒的最新价格和涨幅数据
+    '''
     today_start = datetime.datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
     try:
         wine = WineInfo.objects.get(code=code)
@@ -336,8 +360,14 @@ def last_price_ratio(code):
         (last_price - pre_price) / pre_price * 100)
 
 
-# 插入新的持仓信息
 def insert_position(code, price, num, user_id):
+    '''
+    :param code: 红酒code
+    :param price: 价格
+    :param num: 数量
+    :param user_id: 用户id
+    :return: 添加用户新的持仓数据
+    '''
     try:
         wine = WineInfo.objects.get(code=code)
         user = Jh_User.objects.get(user_id=user_id)
