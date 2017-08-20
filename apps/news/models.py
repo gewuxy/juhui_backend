@@ -17,7 +17,7 @@ class NewsInfo(models.Model):
     class Meta:
         db_table = 'news_info'
 
-    def __unicode__(self):
+    def __str__(self):
         return '{0} - {1}'.format(self.title, self.news_time)
 
     def to_json(self):

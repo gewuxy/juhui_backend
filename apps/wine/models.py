@@ -12,6 +12,7 @@ class WineInfo(models.Model):
     name_en = models.CharField(max_length=128, verbose_name='英文名称', default='')
     winery = models.CharField(max_length=64, verbose_name='酒庄', default='')
     proposed_price = models.FloatField(verbose_name='初始价格')
+    year = models.CharField(max_length=4, verbose_name='年份', default='')
     is_delete = models.BooleanField(default=False, verbose_name='是否无效酒')
 
     class Meta:

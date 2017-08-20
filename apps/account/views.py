@@ -38,8 +38,11 @@ def is_valid(body, params_list):
     return True, body
 
 
-# 判断是否登录用户,并返回登录用户（游客用户）id
 def is_auth(meta):
+    '''
+    :param meta:  请求headers
+    :return: 是否登录，用户id
+    '''
     token = ''
     rval = True
     if not isinstance(meta, dict):
@@ -324,10 +327,12 @@ class InfoView(APIView):
         return JsonResponse(res)
 
 
-# 上传用户头像
 @api_view(['POST'])
 @permission_classes((IsAuthenticated, ))
 def upload(request):
+    '''
+    上传用户头像
+    '''
     file = request.FILES.get('file')
     if not file:
         return JsonResponse(get_response_data('200001'))
@@ -354,10 +359,12 @@ def upload(request):
     return JsonResponse(get_response_data('000000', data))
 
 
-# 我的持仓
 @api_view(['POST'])
 @permission_classes((IsAuthenticated, ))
 def my_position(request):
+    '''
+    我的持仓信息
+    '''
     try:
         page = int(request.POST.get('page', 1))
         page_num = int(request.POST.get('page_num', 10))

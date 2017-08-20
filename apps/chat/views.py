@@ -10,18 +10,18 @@ from apps.chat.chat_view_lib import set_video_img_1
 import time
 
 
-# 获取聊天记录
 @api_view(['GET'])
 @permission_classes((IsAuthenticated, ))
 def get_comment(request):
+    '''
+    获取聊天记录
+    '''
     wine_code = request.GET.get('code')
     if not wine_code:
         return JsonResponse(get_response_data('000002'))
     page = request.GET.get('page', 1)
     page_num = request.GET.get('page_num', 50)
-    # count = request.GET.get('count', 100)
     try:
-        # count = int(count)
         page = int(page)
         page_num = int(page_num)
         start = (page - 1) * page_num
@@ -47,8 +47,10 @@ def get_comment(request):
     return JsonResponse(get_response_data('000000', data))
 
 
-# 保存聊天信息
 def save_comment(request):
+    '''
+    存储聊天记录
+    '''
     user_id = request.POST.get('user_id')
     wine_code = request.POST.get('wine_code')
     msg_type = request.POST.get('msg_type')
@@ -74,16 +76,18 @@ def save_comment(request):
     return JsonResponse(get_response_data('000000'))
 
 
-# 上传媒体文件
 @api_view(['POST'])
 @permission_classes((IsAuthenticated, ))
 def upload(request):
+    '''
+    公众号中上传媒体文件，包括图片、语音、视频
+    '''
     file = request.FILES.get('file')
     if not file:
         return JsonResponse(get_response_data('200001'))
     file_name = file.name
     timestamp = str(int(time.time() * 1000))
-    print('file name is {0}'.format(file_name))
+    # print('file name is {0}'.format(file_name))
     try:
         file_type = file_name.split('.')[1]
     except Exception:
@@ -103,7 +107,7 @@ def upload(request):
         video_img_url = request.build_absolute_uri('/') + 'media/chat/video/' + timestamp + '.jpg'
     else:
         return JsonResponse(get_response_data('200002'))
-    print('file path is {0}'.format(file_path))
+    # print('file path is {0}'.format(file_path))
     with open(file_path, 'wb+') as f:
         for chunk in file.chunks():
             f.write(chunk)

@@ -15,6 +15,7 @@ from rest_framework.permissions import IsAuthenticated
 import datetime
 import time
 import logging
+import xlrd
 
 
 _logger = logging.getLogger('wineinfo')
@@ -47,10 +48,10 @@ def get_wine_list(codes_str, start=0, end=MAX_PAGE_NUM):
     return data
 
 
-# 添加自选
-# @api_view(['POST'])
-# @permission_classes((IsAuthenticated, ))
 def set_optional(request):
+    '''
+    添加自选
+    '''
     wine_code = request.POST.get('code')
     if not wine_code:
         res = get_response_data('000002')
@@ -64,10 +65,8 @@ def set_optional(request):
         jh_user = Jh_User.objects.get(id=user_id)
     else:
         return JsonResponse(get_response_data('000007'))
-    # jh_user = Jh_User.objects.get(user=request.user)
     personal_select = jh_user.personal_select
     personal_select_list = personal_select.split(';')
-    # personal_select_list = list(set(personal_select_list))
     if wine_code in personal_select_list:
         res = get_response_data('100001')
         return JsonResponse(res)
@@ -75,10 +74,8 @@ def set_optional(request):
         personal_select += ';' + wine_code
     else:
         personal_select = wine_code
-    # personal_select += wine_code + ';'
     jh_user.personal_select = personal_select
     jh_user.save()
-    # 推送最新自选信息
     rval = select_emit(wine_code, 'add')
     if rval:
         _logger.info('推送最新自选信息<<<成功>>>!')
@@ -88,12 +85,11 @@ def set_optional(request):
     return JsonResponse(res)
 
 
-# 获取自选列表
-# @api_view(['GET'])
-# @permission_classes((IsAuthenticated, ))
 def get_optional(request):
-    # 判断用户是否登录
-    rval, user_id = is_auth(request.META)
+    '''
+    获取自选列表
+    '''
+    rval, user_id = is_auth(request.META)  # 判断用户是否登录
     _logger.info('user is auth? {0}, user id is {1}'.format(rval, user_id))
     if rval:
         jh_user = Jh_User.objects.get(user_id=user_id)  # 已注册用户
@@ -101,7 +97,6 @@ def get_optional(request):
         jh_user = Jh_User.objects.get(id=user_id)  # 游客
     else:
         return JsonResponse(get_response_data('000007'))
-    # jh_user = Jh_User.objects.get(user=request.user)
     personal_select = jh_user.personal_select
     options = personal_select.split(';')
     try:
@@ -124,7 +119,6 @@ def get_optional(request):
         last_price, ratio = last_price_ratio(wine_code)
         wine_json['quote_change'] = ratio  # 待后续补充计算方法
         wine_json['last_price'] = last_price
-        # wine_json['proposed_price'] = last_price
         wine_json['sort_no'] = sort_no
         data.append(wine_json)
         sort_no += 1
@@ -132,10 +126,10 @@ def get_optional(request):
     return JsonResponse(res)
 
 
-# 搜索
-# @api_view(['POST'])
-# @permission_classes((IsAuthenticated, ))
 def search_wine(request):
+    '''
+    根据红酒的代码或名称进行搜索
+    '''
     key = request.POST.get('key')
     try:
         page = int(request.POST.get('page', OPTINOAL_PAGE))
@@ -169,7 +163,6 @@ def search_wine(request):
                 wine_json['is_select'] = False
             data.append(wine_json)
     else:
-        # wine_info = WineInfo.objects.filter(name__contains=key)[start:end]
         wine_info = WineInfo.objects.filter(Q(name__contains=key) | Q(code__contains=key))[start:end]
         for wine in wine_info:
             wine_json = wine.to_json()
@@ -184,10 +177,10 @@ def search_wine(request):
     return JsonResponse(res)
 
 
-# 删除自选
-# @api_view(['POST'])
-# @permission_classes((IsAuthenticated, ))
 def del_optional(request):
+    '''
+    删除自选
+    '''
     codes = request.POST.get('code')
     if not codes:
         return get_response_data('000002')
@@ -200,7 +193,6 @@ def del_optional(request):
         jh_user = Jh_User.objects.get(id=user_id)  # 游客
     else:
         return JsonResponse(get_response_data('000007'))
-    # jh_user = Jh_User.objects.get(user=request.user)
     personal_select = jh_user.personal_select.split(';')
     del_codes = list(set(codes.split(';')))
     new_codes = [code for code in personal_select if code not in del_codes]
@@ -230,10 +222,10 @@ def del_optional(request):
     return JsonResponse(res)
 
 
-# 对自选数据排序
-# @api_view(['POST'])
-# @permission_classes((IsAuthenticated, ))
 def sort_optional(request):
+    '''
+    对自选列表中的数据进行排序
+    '''
     sort_type = request.POST.get('sort_type', '1')
     page = request.POST.get('page', str(OPTINOAL_PAGE))
     page_num = request.POST.get('page_num', str(OPTINOAL_PAGE_NUM))
@@ -250,7 +242,6 @@ def sort_optional(request):
         jh_user = Jh_User.objects.get(id=user_id)  # 游客
     else:
         return JsonResponse(get_response_data('000007'))
-    # jh_user = Jh_User.objects.get(user=request.user)
     personal_select = jh_user.personal_select
     if sort_type == '1':  # 移动单个选项
         wine_code = request.POST.get('code', '')
@@ -290,7 +281,13 @@ def sort_optional(request):
         return JsonResponse(get_response_data('000000', data))
 
 
-def _reduce_position(user, wine, num):  # 减少持仓
+def _reduce_position(user, wine, num):
+    '''
+    :param user:  用户
+    :param wine: 红酒
+    :param num: 所需减少的数量
+    :return: 减少持仓
+    '''
     tmp_num = num
     positions = Position.objects.filter(user=user, wine=wine, num__gt=0).order_by('-num')
     for position in positions:
@@ -307,10 +304,12 @@ def _reduce_position(user, wine, num):  # 减少持仓
             tmp_num = num - position.num
 
 
-# 卖出
 @api_view(['POST'])
 @permission_classes((IsAuthenticated, ))
 def sell(request):
+    '''
+    用户提交卖出委托单
+    '''
     wine_code = request.POST.get('code')
     price = request.POST.get('price')
     num = request.POST.get('num')
@@ -327,23 +326,6 @@ def sell(request):
 
     jh_user = Jh_User.objects.get(user=request.user)
 
-    # 将历史可撤委托单中的资产重新插入到资产表中
-    '''
-    today_start = datetime.datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
-    old_comm = Commission.objects.filter(
-        wine=wine,
-        trade_direction=1,
-        user=jh_user,
-        status=0,
-        create_at__lt=today_start
-    )
-    for comm in old_comm:
-        comm.status = 2
-        pos = Position(wine=wine, user=jh_user, price=comm.price, num=comm.num)
-        pos.save()
-        comm.save()
-    '''
-
     # 查询个人资产表，是否持仓充足
     positions = Position.objects.filter(user=jh_user, wine=wine, num__gt=0).order_by('-num')
     total_num = positions.aggregate(Sum('num'))
@@ -353,21 +335,6 @@ def sell(request):
         return JsonResponse(get_response_data('100002'))
     else:
         pass
-        '''
-        tmp_num = num
-        for position in positions:
-            if tmp_num == 0:
-                break
-            elif position.num >= tmp_num:
-                position.num -= tmp_num
-                position.save()
-                tmp_num = 0
-                break
-            else:
-                position.num = 0
-                position.save()
-                tmp_num = num - position.num
-        '''
 
     commission_order = Commission(
         wine=wine,
@@ -467,10 +434,12 @@ def sell(request):
     return JsonResponse(get_response_data('000000'))
 
 
-# 买入
 @api_view(['POST'])
 @permission_classes((IsAuthenticated, ))
 def buy(request):
+    '''
+    用户提交买入委托单
+    '''
     wine_code = request.POST.get('code')
     price = request.POST.get('price')
     num = request.POST.get('num')
@@ -596,10 +565,12 @@ def buy(request):
     return JsonResponse(get_response_data('000000'))
 
 
-# 撤销委托单
 @api_view(['POST'])
 @permission_classes((IsAuthenticated, ))
 def cancel_commission(request):
+    '''
+    撤销委托单
+    '''
     commission_id = request.POST.get('commission_id')
     if not commission_id:
         return JsonResponse(get_response_data('000002'))
@@ -629,8 +600,10 @@ def cancel_commission(request):
     return JsonResponse(get_response_data('000000'))
 
 
-# 详情页数据
 def detail(request):
+    '''
+    获取详情页数据
+    '''
     lastest_price = 0  # 最新价
     highest_price = 0  # 最高价
     lowest_price = 0  # 最低价
@@ -797,10 +770,12 @@ def detail(request):
     return JsonResponse(get_response_data('000000', data))
 
 
-# 当日成交
 @api_view(['POST'])
 @permission_classes((IsAuthenticated, ))
 def today_deal(request):
+    '''
+    获取当日成交数据
+    '''
     try:
         page = int(request.POST.get('page', OPTINOAL_PAGE))
         page_num = int(request.POST.get('page_num', OPTINOAL_PAGE_NUM))
@@ -822,10 +797,12 @@ def today_deal(request):
     return JsonResponse(get_response_data('000000', deals_json))
 
 
-# 历史成交
 @api_view(['POST'])
 @permission_classes((IsAuthenticated, ))
 def history_deal(request):
+    '''
+    获取历史成交数据
+    '''
     try:
         page = int(request.POST.get('page', OPTINOAL_PAGE))
         page_num = int(request.POST.get('page_num', OPTINOAL_PAGE_NUM))
@@ -847,10 +824,12 @@ def history_deal(request):
     return JsonResponse(get_response_data('000000', deals_json))
 
 
-# 当日委托
 @api_view(['POST'])
 @permission_classes((IsAuthenticated, ))
 def today_commission(request):
+    '''
+    获取当日委托数据
+    '''
     try:
         page = int(request.POST.get('page', OPTINOAL_PAGE))
         page_num = int(request.POST.get('page_num', OPTINOAL_PAGE_NUM))
@@ -872,10 +851,12 @@ def today_commission(request):
     return JsonResponse(get_response_data('000000', commissions_json))
 
 
-# 历史委托
 @api_view(['POST'])
 @permission_classes((IsAuthenticated, ))
 def history_commission(request):
+    '''
+    获取历史委托数据
+    '''
     try:
         page = int(request.POST.get('page', OPTINOAL_PAGE))
         page_num = int(request.POST.get('page_num', OPTINOAL_PAGE_NUM))
@@ -904,10 +885,12 @@ def history_commission(request):
     return JsonResponse(get_response_data('000000', commissions_json))
 
 
-# 详情页撤单接口
 @api_view(['POST'])
 @permission_classes((IsAuthenticated, ))
 def detail_cancel_comm(request):
+    '''
+    获取可撤委托单数据
+    '''
     wine_code = request.POST.get('code')
     try:
         wine = WineInfo.objects.get(code=wine_code)
@@ -929,3 +912,34 @@ def detail_cancel_comm(request):
         data.append(comm.to_json())
     return JsonResponse(get_response_data('000000', data))
 
+
+def insert_wine_from_xlsx(request):
+    '''
+    从xlsx文件中倒入葡萄酒数据
+    '''
+    xlsx_path = request.POST.get('xlsx_path')
+    print(xlsx_path)
+    if not xlsx_path:
+        return JsonResponse(get_response_data('000002'))
+    data = xlrd.open_workbook(xlsx_path)
+    table = data.sheets()[0]
+    nrows = table.nrows
+    print(nrows)
+    for i in range(1, nrows):
+        code = str(i).zfill(6)
+        name = table.row_values(i)[1]
+        name_en = table.row_values(i)[0]
+        winery = table.row_values(i)[2]
+        proposed_price = table.row_values(i)[5]
+        year = str(table.row_values(i)[4])[:4].strip()
+        print(year)
+        new_wine = WineInfo(code=code,
+                            name=name,
+                            name_en=name_en,
+                            winery=winery,
+                            proposed_price=proposed_price,
+                            year=year)
+        new_wine.save()
+    return JsonResponse(get_response_data('000000'))
+    # except Exception:
+    #     return JsonResponse(get_response_data('000002'))

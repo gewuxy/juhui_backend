@@ -15,6 +15,7 @@ from apps.wine.views import (
     history_commission,
     cancel_commission,
     detail_cancel_comm,
+    insert_wine_from_xlsx
 )
 from apps.wine.wine_view_lib import (
     forchart,
@@ -43,4 +44,5 @@ urlpatterns = [
     url(r'todaycommission', today_commission, name='today_commission'),  # 当日委托
     url(r'historycommission', history_commission, name='history_commission'), # 历史委托
     url(r'detailcancelcomm', detail_cancel_comm, name='detail_cancel_comm'),  # 详情页撤单
+    url(r'insertwinefromxlsx', insert_wine_from_xlsx, name='insert_wine_from_xlsx'),  # 从xlsx文件中导入葡萄酒数据
 ]
