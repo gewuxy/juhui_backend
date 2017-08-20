@@ -15,6 +15,7 @@ from rest_framework.permissions import IsAuthenticated
 import datetime
 import time
 import logging
+import xlrd
 
 
 _logger = logging.getLogger('wineinfo')
@@ -911,3 +912,34 @@ def detail_cancel_comm(request):
         data.append(comm.to_json())
     return JsonResponse(get_response_data('000000', data))
 
+
+def insert_wine_from_xlsx(request):
+    '''
+    从xlsx文件中倒入葡萄酒数据
+    '''
+    xlsx_path = request.POST.get('xlsx_path')
+    print(xlsx_path)
+    if not xlsx_path:
+        return JsonResponse(get_response_data('000002'))
+    data = xlrd.open_workbook(xlsx_path)
+    table = data.sheets()[0]
+    nrows = table.nrows
+    print(nrows)
+    for i in range(1, nrows):
+        code = str(i).zfill(6)
+        name = table.row_values(i)[1]
+        name_en = table.row_values(i)[0]
+        winery = table.row_values(i)[2]
+        proposed_price = table.row_values(i)[5]
+        year = str(table.row_values(i)[4])[:4].strip()
+        print(year)
+        new_wine = WineInfo(code=code,
+                            name=name,
+                            name_en=name_en,
+                            winery=winery,
+                            proposed_price=proposed_price,
+                            year=year)
+        new_wine.save()
+    return JsonResponse(get_response_data('000000'))
+    # except Exception:
+    #     return JsonResponse(get_response_data('000002'))
