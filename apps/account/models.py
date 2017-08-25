@@ -46,3 +46,26 @@ class Jh_User(models.Model):
             d[attr] = getattr(self, attr)
         d['user'] = d['user'].id
         return d
+
+
+    class Attention(models.Model):
+        '''
+        用户关注表
+        '''
+        user = models.ForeignKey(Jh_User)
+        attention_obj_type = models.IntegerField(
+            default=0, verbose_name='关注对象类型', choices=[(0, '用户'), (1, '酒')])
+        attention_obj_id = models.CharField(default='', verbose_name='关注对象id', max_length=8)
+        attention_obj_name = models.CharField(default='', verbose_name='关注对象名称', max_length=40)
+        is_attention = models.BooleanField(default=False, verbose_name='是否关注')
+        create_time = models.DateTimeField(auto_now_add=True)
+
+        class Meta:
+            db_table = 'account_attention'
+
+        def __str__(self):
+            if self.is_attention:
+                pre_str = '[关注]'
+            else:
+                pre_str = '[不关注]'
+            return '{0}--{1}--{2}'.format(pre_str, self.user.nickname, self.attention_obj_name)
