@@ -69,3 +69,38 @@ class Jh_User(models.Model):
             else:
                 pre_str = '[不关注]'
             return '{0}--{1}--{2}'.format(pre_str, self.user.nickname, self.attention_obj_name)
+
+
+    class Blog(models.Model):
+        '''
+        短评/长文数据表
+        '''
+        author = models.ForeignKey(Jh_User)
+        title = models.CharField(default='', verbose_name='标题', max_length=64)
+        abstract = models.CharField(default='', verbose_name='摘要', max_length=255)
+        img = models.CharField(default='', verbose_name='图片', max_length=255)
+        content = models.TextField(default='', verbose_name='正文')
+        area = models.CharField(default='', verbose_name='地点', max_length=255)
+        create_time = models.DateTimeField(auto_now_add=True)
+        is_delete = models.BooleanField(default=False, verbose_name='是否删除')
+
+
+    class BlogComment(models.Model):
+        '''
+        短评/长文的评论数据表
+        '''
+        blog = models.ForeignKey(Blog)
+        author = models.ForeignKey(Jh_User)
+        content = models.TextField(default='', verbose_name='评论内容')
+        create_time = models.DateTimeField(auto_now_add=True)
+        is_delete = models.BooleanField(default=False, verbose_name='是否删除')
+
+
+    class Likes(models.Model):
+        '''
+        短评/长文的点赞数据表
+        '''
+        blog = models.ForeignKey(Blog)
+        author = models.ForeignKey(Jh_User)
+        create_time = models.DateTimeField(auto_now_add=True)
+        is_delete = models.BooleanField(default=False, verbose_name='是否取消点赞')
