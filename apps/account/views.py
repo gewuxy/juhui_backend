@@ -472,8 +472,12 @@ def add_attention(request):
         user=jh_user, attention_obj_type=0, attention_obj_id=user_id, is_attention=True)
     if attention_records:
         return JsonResponse(get_response_data('200001'))
+    if attention_obj.nickname:
+        name = attention_obj.nickname
+    else:
+        name = ''
     record = Attention(user=jh_user, attention_obj_type=0, attention_obj_id=user_id,
-                       attention_ogj_name=attention_obj.nickname, is_attention=True)
+                       attention_obj_name=name, is_attention=True)
     record.save()
     return JsonResponse(get_response_data('000000'))
 
