@@ -7,7 +7,7 @@ import time
 import datetime
 
 from apps import get_response_data
-from apps.account.models import Jh_User
+from apps.account.models import Jh_User, Attention
 from apps.wine.models import Position, Deal, Commission
 import logging
 import top  # taobao SDK
@@ -446,3 +446,88 @@ def my_position(request):
         'position_list': position_list[start:end]
     }
     return JsonResponse(get_response_data('000000', data))
+
+
+@api_view(['POST'])
+@permission_classes((IsAuthenticated, ))
+def add_attention(request):
+    '''
+    添加关注用户
+    '''
+    # 获取自身用户信息
+    try:
+        jh_user = Jh_User.objects.get(user=request.user)
+    except Exception:
+        res = get_response_data('000007')
+        return JsonResponse(res)
+    # 获取关注对象用户信息
+    user_id = request.POST.get('user_id')
+    if not user_id:
+        return JsonResponse(get_response_data('000002'))
+    attention_obj = Jh_User.objects.get(id=user_id)
+    if not attention_obj:
+        return JsonResponse(get_response_data('000002'))
+
+    attention_records = Attention.objects.filter(
+        user=jh_user, attention_obj_type=0, attention_obj_id=user_id, is_attention=True)
+    if attention_records:
+        return JsonResponse(get_response_data('200001'))
+    record = Attention(user=jh_user, attention_obj_type=0, attention_obj_id=user_id,
+                       attention_ogj_name=attention_obj.nickname, is_attention=True)
+    record.save()
+    return JsonResponse(get_response_data('000000'))
+
+
+@api_view(['POST'])
+@permission_classes((IsAuthenticated, ))
+def cancel_attention(request):
+    '''
+    取消关注用户
+    '''
+    # 获取自身用户信息
+    try:
+        jh_user = Jh_User.objects.get(user=request.user)
+    except Exception:
+        res = get_response_data('000007')
+        return JsonResponse(res)
+    # 获取关注对象用户信息
+    user_id = request.POST.get('user_id')
+    if not user_id:
+        return JsonResponse(get_response_data('000002'))
+    attention_obj = Jh_User.objects.get(id=user_id)
+    if not attention_obj:
+        return JsonResponse(get_response_data('000002'))
+
+    attention_records = Attention.objects.filter(
+        user=jh_user, attention_obj_type=0, attention_obj_id=user_id, is_attention=True)
+    for record in attention_records:
+        record.is_attention = False
+        record.save()
+    return JsonResponse(get_response_data('000000'))
+
+
+@api_view(['POST'])
+@permission_classes((IsAuthenticated, ))
+def get_attention_obj(request):
+    '''
+    获取关注用户列表
+    '''
+    try:
+        jh_user = Jh_User.objects.get(user=request.user)
+    except Exception:
+        res = get_response_data('000007')
+        return JsonResponse(res)
+    friends = Attention.objects.filter(user=jh_user, attention_obj_type=0, is_attention=True)
+    friends_info = []
+    for friend in friends:
+        try:
+            friend_obj = Jh_User.objects.get(id=friend.attention_obj_id)
+        except Exception:
+            continue
+        friend_info = {}
+        friend_info['user_id'] = friend_obj.id
+        friend_info['user_img_url'] = friend_obj.img_url
+        friend_info['user_nickname'] = friend_obj.nickname
+        friends_info.append(friend_info)
+    return JsonResponse(get_response_data('000000', friends_info))
+

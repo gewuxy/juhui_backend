@@ -48,59 +48,24 @@ class Jh_User(models.Model):
         return d
 
 
-    class Attention(models.Model):
-        '''
-        用户关注表
-        '''
-        user = models.ForeignKey(Jh_User)
-        attention_obj_type = models.IntegerField(
-            default=0, verbose_name='关注对象类型', choices=[(0, '用户'), (1, '酒')])
-        attention_obj_id = models.CharField(default='', verbose_name='关注对象id', max_length=8)
-        attention_obj_name = models.CharField(default='', verbose_name='关注对象名称', max_length=40)
-        is_attention = models.BooleanField(default=False, verbose_name='是否关注')
-        create_time = models.DateTimeField(auto_now_add=True)
+class Attention(models.Model):
+    '''
+    用户关注表
+    '''
+    user = models.ForeignKey(Jh_User)
+    attention_obj_type = models.IntegerField(
+        default=0, verbose_name='关注对象类型', choices=[(0, '用户'), (1, '酒')])
+    attention_obj_id = models.CharField(default='', verbose_name='关注对象id', max_length=8)
+    attention_obj_name = models.CharField(default='', verbose_name='关注对象名称', max_length=40)
+    is_attention = models.BooleanField(default=False, verbose_name='是否关注')
+    create_time = models.DateTimeField(auto_now_add=True)
 
-        class Meta:
-            db_table = 'account_attention'
+    class Meta:
+        db_table = 'account_attention'
 
-        def __str__(self):
-            if self.is_attention:
-                pre_str = '[关注]'
-            else:
-                pre_str = '[不关注]'
-            return '{0}--{1}--{2}'.format(pre_str, self.user.nickname, self.attention_obj_name)
-
-
-    class Blog(models.Model):
-        '''
-        短评/长文数据表
-        '''
-        author = models.ForeignKey(Jh_User)
-        title = models.CharField(default='', verbose_name='标题', max_length=64)
-        abstract = models.CharField(default='', verbose_name='摘要', max_length=255)
-        img = models.CharField(default='', verbose_name='图片', max_length=255)
-        content = models.TextField(default='', verbose_name='正文')
-        area = models.CharField(default='', verbose_name='地点', max_length=255)
-        create_time = models.DateTimeField(auto_now_add=True)
-        is_delete = models.BooleanField(default=False, verbose_name='是否删除')
-
-
-    class BlogComment(models.Model):
-        '''
-        短评/长文的评论数据表
-        '''
-        blog = models.ForeignKey(Blog)
-        author = models.ForeignKey(Jh_User)
-        content = models.TextField(default='', verbose_name='评论内容')
-        create_time = models.DateTimeField(auto_now_add=True)
-        is_delete = models.BooleanField(default=False, verbose_name='是否删除')
-
-
-    class Likes(models.Model):
-        '''
-        短评/长文的点赞数据表
-        '''
-        blog = models.ForeignKey(Blog)
-        author = models.ForeignKey(Jh_User)
-        create_time = models.DateTimeField(auto_now_add=True)
-        is_delete = models.BooleanField(default=False, verbose_name='是否取消点赞')
+    def __str__(self):
+        if self.is_attention:
+            pre_str = '[关注]'
+        else:
+            pre_str = '[不关注]'
+        return '{0}--{1}--{2}'.format(pre_str, self.user.nickname, self.attention_obj_name)

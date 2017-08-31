@@ -8,7 +8,10 @@ from apps.account.views import (
     resetpassword,
     InfoView,
     upload,
-    my_position
+    my_position,
+    add_attention,
+    cancel_attention,
+    get_attention_obj
 )
 from apps.account.tests import (
     create_user,
@@ -29,6 +32,9 @@ urlpatterns = [
     url(r'^info/$', InfoView.as_view(), name='info'),  # 用户个人信息
     url(r'^upload/$', upload, name='upload'),  # 上传媒体信息
     url(r'^myposition/$', my_position, name='my_position'),  # 我的持仓
+    url(r'^addattention/$', add_attention, name='add_attention'),  # 添加关注用户
+    url(r'^cancelattention/$', cancel_attention, name='cancel_attention'),  # 取消关注用户
+    url(r'^getattentionobj/$', get_attention_obj, name='get_attention_obj'),  # 获取关注用户列表
     # 以下为测试接口
     url(r'^createuser/$', create_user, name='create_user'),
     url(r'^distribposition/$', distrib_position, name='distrib_position'),
