@@ -510,7 +510,7 @@ def cancel_attention(request):
     return JsonResponse(get_response_data('000000'))
 
 
-@api_view(['POST'])
+@api_view(['GET'])
 @permission_classes((IsAuthenticated, ))
 def get_attention_obj(request):
     '''
