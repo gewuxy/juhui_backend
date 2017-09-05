@@ -10,7 +10,7 @@ class Blog(models.Model):
     author = models.ForeignKey(Jh_User)
     title = models.CharField(default='', verbose_name='标题', max_length=64)
     abstract = models.CharField(default='', verbose_name='摘要', max_length=255)
-    img = models.CharField(default='', verbose_name='图片', max_length=255)
+    first_img = models.CharField(default='', verbose_name='首图', max_length=255)
     content = models.TextField(default='', verbose_name='正文')
     area = models.CharField(default='', verbose_name='地点', max_length=255)
     create_time = models.DateTimeField(auto_now_add=True)
@@ -21,6 +21,17 @@ class Blog(models.Model):
 
     def __str__(self):
         return '{0}--{1}--{2}'.format(self.title, self.author.nickname, self.create_time)
+
+    def to_json(self):
+        d = {}
+        d['author_name'] = self.author.nickname
+        d['author_img'] = self.author.img_url
+        d['title'] = self.title
+        d['content'] = self.content
+        d['area'] = self.area
+        d['create_time'] = self.create_time.strftime('%Y-%m-%d %H:%M:%S')
+        d['is_delete'] = self.is_delete
+        return d
 
 
 class BlogComment(models.Model):
@@ -38,6 +49,17 @@ class BlogComment(models.Model):
 
     def __str__(self):
         return '{0}--{1}--{2}'.format(self.content[:10], self.author.nickname, self.create_time)
+
+    def to_json(self):
+        d = {}
+        d['blog_id'] = self.blog.id
+        d['blog_title'] = self.blog.title
+        d['author_name'] = self.author.nickname
+        d['author_img'] = self.author.img_url
+        d['content'] = self.content
+        d['create_time'] = self.create_time.strftime('%Y-%m-%d %H:%M:%S')
+        d['is_delete'] = self.is_delete
+        return d
 
 
 class Likes(models.Model):

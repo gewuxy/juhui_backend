@@ -50,7 +50,8 @@ LOCAL_APPS = (
     'apps.account',
     'apps.wine',
     'apps.chat',
-    'apps.news'
+    'apps.news',
+    'apps.commentary'
 )
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
 

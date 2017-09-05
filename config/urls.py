@@ -51,5 +51,6 @@ urlpatterns = [
     url(r'^api/account/', include('apps.account.urls', namespace='account')),
     url(r'^api/wine/', include('apps.wine.urls', namespace='wine')),
     url(r'^api/chat/', include('apps.chat.urls', namespace='chat')),
-    url(r'^api/news/', include('apps.news.urls', namespace='news'))
+    url(r'^api/news/', include('apps.news.urls', namespace='news')),
+    url(r'^api/commentary/', include('apps.commentary.urls', namespace='commentary'))
 ]
