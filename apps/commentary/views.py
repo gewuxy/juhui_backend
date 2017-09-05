@@ -147,3 +147,76 @@ def get_comments(request):
         return JsonResponse(get_response_data('000002'))
     comments = views_lib.get_comments(blog, page, page_num)
     return JsonResponse(get_response_data('000000', comments))
+
+
+@api_view(['POST'])
+@permission_classes((IsAuthenticated, ))
+def delete_blog(request):
+    '''
+    删除短评／长文
+    '''
+    try:
+        jh_user = Jh_User.objects.get(user=request.user)
+    except Exception:
+        res = get_response_data('000004')
+        return JsonResponse(res)
+    blog_id = request.POST.get('blog_id')
+    if not blog_id:
+        return JsonResponse(get_response_data('000002'))
+    try:
+        blog = Blog.objects.get(id=blog_id, author=jh_user, is_delete=False)
+    except Exception:
+        return JsonResponse(get_response_data('000000'))
+    blog.is_delete = True
+    blog.save()
+    return JsonResponse(get_response_data('000000'))
+
+
+@api_view(['POST'])
+@permission_classes((IsAuthenticated, ))
+def delete_comment(request):
+    '''
+    删除短评／长文的评论
+    '''
+    try:
+        jh_user = Jh_User.objects.get(user=request.user)
+    except Exception:
+        res = get_response_data('000004')
+        return JsonResponse(res)
+    comment_id = request.POST.get('comment_id')
+    if not comment_id:
+        return JsonResponse(get_response_data('000002'))
+    try:
+        comment = BlogComment.objects.get(id=comment_id, is_delete=False)
+    except Exception:
+        return JsonResponse(get_response_data('000000'))
+    blog_author = comment.blog.author
+    comment_author = comment.author
+    if jh_user not in [blog_author, comment_author]:
+        return JsonResponse(get_response_data('300001'))
+    comment.is_delete = True
+    comment.save()
+    return JsonResponse(get_response_data('000000'))
+
+
+@api_view(['POST'])
+@permission_classes((IsAuthenticated, ))
+def delete_like(request):
+    '''
+    取消短评／长文的赞
+    '''
+    try:
+        jh_user = Jh_User.objects.get(user=request.user)
+    except Exception:
+        res = get_response_data('000004')
+        return JsonResponse(res)
+    like_id = request.POST.get('like_id')
+    if not like_id:
+        return JsonResponse(get_response_data('000002'))
+    try:
+        like = Likes.objects.get(id=like_id, author=jh_user, is_delete=False)
+    except Exception:
+        return JsonResponse(get_response_data('000000'))
+    like.is_delete = True
+    like.save()
+    return JsonResponse(get_response_data('000000'))
