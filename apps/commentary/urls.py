@@ -8,7 +8,8 @@ from apps.commentary.views import (
     get_comments,
     delete_blog,
     delete_comment,
-    delete_like
+    delete_like,
+    get_blog_list
 )
 
 
@@ -20,5 +21,6 @@ urlpatterns = [
     url(r'^getcomments/$', get_comments, name='get_comments'),  # 获取短评／长文的评论
     url(r'^deleteblog/$', delete_blog, name='delete_blog'),  # 删除短评／长文
     url(r'^deletecomment/$', delete_comment, name='delete_comment'),  # 删除短评／长文的评论
-    url(r'^deletelike/$', delete_like, name='delete_like')  # 取消短评／长文的赞
+    url(r'^deletelike/$', delete_like, name='delete_like'),  # 取消短评／长文的赞
+    url(r'^getbloglist/$', get_blog_list, name='get_blog_list'),  # 获取短评／长文列表
 ]

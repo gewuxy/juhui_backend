@@ -127,6 +127,21 @@ def get_blog_detail(request):
     return JsonResponse(get_response_data('000000', blog_json))
 
 
+def get_blog_list(request):
+    '''
+    获取短评／长文列表
+    '''
+    page = request.GET.get('page', 1)
+    page_num = request.GET.get('page_num', 10)
+    try:
+        page = int(page)
+        page_num = int(page_num)
+    except Exception:
+        return JsonResponse(get_response_data('000002'))
+    blogs = views_lib.get_blog_list(page, page_num)
+    return JsonResponse(get_response_data('000000', blogs))
+
+
 def get_comments(request):
     '''
     获取短评／长文的评论
