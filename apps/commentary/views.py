@@ -19,10 +19,10 @@ def save_blog(request):
     except Exception:
         res = get_response_data('000004')
         return JsonResponse(res)
-    title = request.POST.get('nickname')
-    abstract = request.POST.get('abstract')
+    title = request.POST.get('title', '')
+    abstract = request.POST.get('abstract', '')
     content = request.POST.get('content')
-    if not (title and abstract and content):
+    if not content:
         return JsonResponse(get_response_data('000002'))
     first_img = request.POST.get('first_img', '')
     area = request.POST.get('area', '')
