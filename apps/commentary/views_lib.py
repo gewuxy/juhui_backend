@@ -1,12 +1,32 @@
 # -*- coding: utf8 -*-
 from apps.commentary.models import BlogComment, Likes, Blog
+import redis
+import json
+
+REDIS_CLIENT = redis.StrictRedis(host='localhost', port=6379, db=1)
 
 
-def notice_friends():
+def notice_friends(msg_type, content, create_time, to_id='', from_id='', from_name='', from_img=''):
     '''
-    :return: 通知朋友
+    :param msg_type: 消息类型(新短评new_commentary，评论comment，点赞like)
+    :param content: 消息内容
+    :param create_time: 消息发生时间
+    :param to_id: 消息接受用户的id
+    :param from_id: 消息来源用户的id
+    :param from_name: 消息来源用户的昵称
+    :param from_img: 消息来源用户的头像
+    :return: 广播短评页面的消息提醒
     '''
-    pass
+    REDIS_CLIENT.publish('commentary', json.dumps({
+        'msg_type': msg_type,
+        'content': content,
+        'create_time': create_time,
+        'to_id': to_id,
+        'from_id': from_id,
+        'from_name': from_name,
+        'from_img': from_img
+    }))
+    return True
 
 
 def get_comments_count(blog):

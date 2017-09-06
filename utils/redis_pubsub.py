@@ -9,6 +9,7 @@ REDIS_CLIENT = redis.StrictRedis(host='localhost', port=6379, db=1)
 SAVE_MSG_URL = 'https://jh.qiuxiaokun.com/api/chat/save/'
 GET_DETAIL_INFO = 'https://jh.qiuxiaokun.com/api/wine/detail/'
 EMIT_DETAIL_INFO = 'http://39.108.142.204:8001/last_price/'
+NOTICE_FRIENDS = 'http://39.108.142.204:8001/notice_friends/'
 
 
 # 请求url（/o/token/）获取access_token，并将它存到redis中
@@ -118,13 +119,13 @@ def listen():
                             print('广播最新详情信息<<<成功>>>！')
                         else:
                             print('广播最新详情信息<<<失败>>>！')
-                    '''
-                    save_info = (
-                        params['code'],
-                        params['price'],
-                        params['time']
-                    )
-                    '''
+                elif item['channel'].decode('utf8') == 'commentary':  # 监听短评页面的消息提醒
+                    r = requests.post(NOTICE_FRIENDS, data=params)
+                    print('get nodejs notice_friends return content is {0}'.format(r.content))
+                    if r.content == b'000000':
+                        print('用户提醒<<<成功>>>！')
+                    else:
+                        print('用户提醒<<<失败>>>！')
                 else:
                     pass
             except Exception:

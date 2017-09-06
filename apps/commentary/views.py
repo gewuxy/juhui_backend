@@ -6,6 +6,9 @@ from apps.account.models import Jh_User
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import api_view, permission_classes
 from apps.commentary import views_lib
+import logging
+
+_logger = logging.getLogger('commentary')
 
 
 @api_view(['POST'])
@@ -46,9 +49,11 @@ def save_blog(request):
                 first_img=first_img,
                 area=area)
     blog.save()
+    create_time = blog.create_time.strftime('%Y-%m-%d %H:%M:%S')
 
     # 通知用户
-    views_lib.notice_friends()
+    views_lib.notice_friends('new_commentary', '新短评', create_time)
+    _logger.info('new_commentary | 新短评 | {0}'.format(create_time))
 
     return JsonResponse(get_response_data('000000'))
 
@@ -76,7 +81,11 @@ def save_comment(request):
     comment.save()
 
     # 通知被评论用户
-    views_lib.notice_friends()
+    create_time = comment.create_time.strftime('%Y-%m-%d %H:%M:%S')
+    views_lib.notice_friends('comment', content, create_time, blog.author.id,
+                             jh_user.id, jh_user.nickname, jh_user.img_url)
+    _logger.info('comment | {0} | {1} | {2} | {3} | {4} | {5}'.format(
+        content, create_time, blog.author.id, jh_user.id, jh_user.nickname, jh_user.img_url))
 
     return JsonResponse(get_response_data('000000'))
 
@@ -101,7 +110,10 @@ def save_like(request):
     like.save()
 
     # 通知被赞用户
-    views_lib.notice_friends()
+    create_time = like.create_time.strftime('%Y-%m-%d %H:%M:%S')
+    views_lib.notice_friends('like', '赞', create_time, blog.author.id, jh_user.id, jh_user.nickname, jh_user.img_url)
+    _logger.info('like | 点赞 | {0} | {1} | {2} | {3} | {4}'.format(
+        create_time, blog.author.id, jh_user.id, jh_user.nickname, jh_user.img_url))
 
     return JsonResponse(get_response_data('000000'))
 

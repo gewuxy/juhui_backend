@@ -27,6 +27,15 @@ app.post('/last_price/', function(req, res){
     io.emit('last_price', data);
     res.send("000000")
 });
+
+//广播短评中的消息
+app.post('/notice_friends/', function(req, res){
+    console.log('enter notice_friends')
+    data = req.body;
+    //console.log(data);
+    io.emit('commentary', data);
+    res.send("000000")
+});
  
 app.post('/send_msg/', function(req, res){
     console.log('enter send_msg');
