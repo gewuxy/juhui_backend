@@ -29,6 +29,8 @@ class Blog(models.Model):
         d['author_img'] = self.author.img_url
         d['title'] = self.title
         d['content'] = self.content
+        d['abstract'] = self.abstract
+        d['first_img'] = self.first_img
         d['area'] = self.area
         d['create_time'] = self.create_time.strftime('%Y-%m-%d %H:%M:%S')
         d['is_delete'] = self.is_delete
