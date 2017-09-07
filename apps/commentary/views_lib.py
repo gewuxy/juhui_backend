@@ -17,6 +17,8 @@ def notice_friends(msg_type, content, create_time, to_id='', from_id='', from_na
     :param from_img: 消息来源用户的头像
     :return: 广播短评页面的消息提醒
     '''
+    if from_name is None:
+        from_name = ''
     REDIS_CLIENT.publish('commentary', json.dumps({
         'msg_type': msg_type,
         'content': content,

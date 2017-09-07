@@ -78,7 +78,7 @@ def get_detail_info(code):
 
 def listen():
     ps = REDIS_CLIENT.pubsub()
-    ps.subscribe(['save_msg', 'last_price', 'token'])
+    ps.subscribe(['save_msg', 'last_price', 'token', 'commentary'])
     for item in ps.listen():
         print('item is {0}'.format(item))
         if item['type'] == 'message':
