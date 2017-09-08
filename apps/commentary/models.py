@@ -25,6 +25,7 @@ class Blog(models.Model):
     def to_json(self):
         d = {}
         d['blog_id'] = self.id
+        d['author_id'] = self.author.id
         d['author_name'] = self.author.nickname
         d['author_img'] = self.author.img_url
         d['title'] = self.title
