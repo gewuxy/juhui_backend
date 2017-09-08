@@ -1,5 +1,6 @@
 # -*- coding: utf8 -*-
 from apps.commentary.models import BlogComment, Likes, Blog
+from apps.account.models import Attention
 import redis
 import json
 
@@ -65,10 +66,25 @@ def get_comments(blog, page=1, page_num=10):
     return comments_json
 
 
-def get_blog_list(page=1, page_num=10):
+def is_concerned(from_user, to_user):
+    '''
+    :param from_user: 主动关注用户
+    :param to_user: 被关注用户
+    :return: 是否已关注
+    '''
+    rval = Attention.objects.filter(
+        user=from_user, attention_obj_type=0, attention_obj_id=to_user.id, is_attention=True)
+    if rval:
+        return True
+    else:
+        return False
+
+
+def get_blog_list(page=1, page_num=10, jh_user=None):
     '''
     :param page: 页码
     :param page_num: 页长
+    :param jh_user: 登录用户
     :return:  短评／长文列表
     '''
     blogs = Blog.objects.filter(is_delete=False).order_by('-create_time')
@@ -79,5 +95,9 @@ def get_blog_list(page=1, page_num=10):
         tmp_blog = blog.to_json()
         tmp_blog['comments_count'] = get_comments_count(blog)
         tmp_blog['likes_count'] = get_likes_count(blog)
+        if jh_user is None:
+            tmp_blog['is_concerned'] = False
+        else:
+            tmp_blog['is_concerned'] = is_concerned(jh_user, blog.author)
         blog_list.append(tmp_blog)
     return blog_list

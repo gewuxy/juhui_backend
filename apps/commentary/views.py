@@ -150,7 +150,11 @@ def get_blog_list(request):
         page_num = int(page_num)
     except Exception:
         return JsonResponse(get_response_data('000002'))
-    blogs = views_lib.get_blog_list(page, page_num)
+    try:
+        jh_user = Jh_User.objects.get(user=request.user)
+    except Exception:
+        jh_user = None
+    blogs = views_lib.get_blog_list(page, page_num, jh_user)
     return JsonResponse(get_response_data('000000', blogs))
 
 
