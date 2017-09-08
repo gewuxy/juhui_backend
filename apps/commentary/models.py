@@ -9,7 +9,7 @@ class Blog(models.Model):
     '''
     author = models.ForeignKey(Jh_User)
     title = models.CharField(default='', verbose_name='标题', max_length=64)
-    abstract = models.CharField(default='', verbose_name='摘要', max_length=255)
+    abstract = models.TextField(default='', verbose_name='摘要')
     first_img = models.CharField(default='', verbose_name='首图', max_length=255)
     content = models.TextField(default='', verbose_name='正文')
     area = models.CharField(default='', verbose_name='地点', max_length=255)
