@@ -15,6 +15,7 @@ class Blog(models.Model):
     area = models.CharField(default='', verbose_name='地点', max_length=255)
     create_time = models.DateTimeField(auto_now_add=True)
     is_delete = models.BooleanField(default=False, verbose_name='是否删除')
+    parent_blog_id = models.IntegerField(default=0, verbose_name='转发源短评id')
 
     class Meta:
         db_table = 'commentary_blog'
@@ -35,6 +36,7 @@ class Blog(models.Model):
         d['area'] = self.area
         d['create_time'] = self.create_time.strftime('%Y-%m-%d %H:%M:%S')
         d['is_delete'] = self.is_delete
+        d['parent_blog_id'] = self.parent_blog_id
         return d
 
 
@@ -56,6 +58,7 @@ class BlogComment(models.Model):
 
     def to_json(self):
         d = {}
+        D['comment_id'] = self.id
         d['blog_id'] = self.blog.id
         d['blog_title'] = self.blog.title
         d['author_name'] = self.author.nickname
@@ -77,6 +80,22 @@ class Likes(models.Model):
 
     class Meta:
         db_table = 'commentary_blog_likes'
+
+    def __str__(self):
+        return '{0}--{1}'.format(self.author.nickname, self.create_time)
+
+
+class CommentLikes(models.Model):
+    '''
+    评论点赞数据表
+    '''
+    comment = models.ForeignKey(BlogComment)
+    author = models.ForeignKey(Jh_User)
+    create_time = models.DateTimeField(auto_now_add=True)
+    is_delete = models.BooleanField(default=False, verbose_name='是否取消点赞')
+
+    class Meta:
+        db_table = 'commentary_comment_likes'
 
     def __str__(self):
         return '{0}--{1}'.format(self.author.nickname, self.create_time)

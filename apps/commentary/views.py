@@ -1,7 +1,7 @@
 # -*- coding: utf8 -*-
 from django.http import JsonResponse
 from apps import get_response_data
-from apps.commentary.models import Blog, BlogComment, Likes
+from apps.commentary.models import Blog, BlogComment, Likes, CommentLikes
 from apps.account.models import Jh_User
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import api_view, permission_classes
@@ -19,6 +19,7 @@ def save_blog(request):
     '''
     try:
         jh_user = Jh_User.objects.get(user=request.user)
+        parent_blog_id = int(request.POST.get('parent_blog_id', 0))
     except Exception:
         res = get_response_data('000004')
         return JsonResponse(res)
@@ -47,7 +48,8 @@ def save_blog(request):
                 abstract=abstract,
                 content=content,
                 first_img=first_img,
-                area=area)
+                area=area,
+                parent_blog_id=parent_blog_id)
     blog.save()
     create_time = blog.create_time.strftime('%Y-%m-%d %H:%M:%S')
 
@@ -114,6 +116,34 @@ def save_like(request):
     views_lib.notice_friends('like', '赞', create_time, blog.author.id, jh_user.id, jh_user.nickname, jh_user.img_url)
     _logger.info('like | 点赞 | {0} | {1} | {2} | {3} | {4}'.format(
         create_time, blog.author.id, jh_user.id, jh_user.nickname, jh_user.img_url))
+
+    return JsonResponse(get_response_data('000000'))
+
+
+@api_view(['POST'])
+@permission_classes((IsAuthenticated, ))
+def save_comment_like(request):
+    '''
+    存储评论的赞
+    '''
+    try:
+        jh_user = Jh_User.objects.get(user=request.user)
+    except Exception:
+        res = get_response_data('000004')
+        return JsonResponse(res)
+    comment_id = request.POST.get('comment_id')
+    try:
+        comment = BlogComment.objects.get(id=comment_id)
+    except Exception:
+        return JsonResponse(get_response_data('000002'))
+    like = CommentLikes(comment=comment, author=jh_user)
+    like.save()
+
+    # 通知被赞用户
+    create_time = like.create_time.strftime('%Y-%m-%d %H:%M:%S')
+    views_lib.notice_friends('like', '赞', create_time, comment.author.id, jh_user.id, jh_user.nickname, jh_user.img_url)
+    _logger.info('like | 点赞 | {0} | {1} | {2} | {3} | {4}'.format(
+        create_time, comment.author.id, jh_user.id, jh_user.nickname, jh_user.img_url))
 
     return JsonResponse(get_response_data('000000'))
 
@@ -241,13 +271,38 @@ def delete_like(request):
     except Exception:
         res = get_response_data('000004')
         return JsonResponse(res)
-    like_id = request.POST.get('like_id')
-    if not like_id:
+    blog_id = request.POST.get('blog_id')
+    if not blog_id:
         return JsonResponse(get_response_data('000002'))
     try:
-        like = Likes.objects.get(id=like_id, author=jh_user, is_delete=False)
+        blog = Blog.objects.get(id=blog_id, is_delete=False)
+        like = Likes.objects.get(blog=blog, author=jh_user, is_delete=False)
+        like.is_delete = True
+        like.save()
     except Exception:
         return JsonResponse(get_response_data('000000'))
-    like.is_delete = True
-    like.save()
+    return JsonResponse(get_response_data('000000'))
+
+
+@api_view(['POST'])
+@permission_classes((IsAuthenticated, ))
+def delete_comment_like(request):
+    '''
+    取消评论的赞
+    '''
+    try:
+        jh_user = Jh_User.objects.get(user=request.user)
+    except Exception:
+        res = get_response_data('000004')
+        return JsonResponse(res)
+    comment_id = request.POST.get('comment_id')
+    if not comment_id:
+        return JsonResponse(get_response_data('000002'))
+    try:
+        comment = BlogComment.objects.get(id=comment_id, is_delete=False)
+        like = CommentLikes.objects.get(comment=comment, author=jh_user, is_delete=False)
+        like.is_delete = True
+        like.save()
+    except Exception:
+        return JsonResponse(get_response_data('000000'))
     return JsonResponse(get_response_data('000000'))

@@ -1,5 +1,5 @@
 # -*- coding: utf8 -*-
-from apps.commentary.models import BlogComment, Likes, Blog
+from apps.commentary.models import BlogComment, Likes, Blog, CommentLikes
 from apps.account.models import Attention
 import redis
 import json
@@ -44,11 +44,19 @@ def get_comments_count(blog):
 def get_likes_count(blog):
     '''
     :param blog: 短评／长文
-    :return: 获赞数
+    :return: 短评获赞数
     '''
     count = Likes.objects.filter(blog=blog, is_delete=False).count()
     return count
 
+
+def get_comment_likes_count(comment):
+    '''
+    :param comment: 评论
+    :return: 评论获赞数
+    '''
+    count = CommentLikes.objects.filter(comment=comment, is_delete=False).count()
+    return count
 
 def get_comments(blog, page=1, page_num=10):
     '''
@@ -62,7 +70,9 @@ def get_comments(blog, page=1, page_num=10):
     end = page * page_num
     comments_json = []
     for comment in comments[start:end]:
-        comments_json.append(comment.to_json())
+        comment_json = comment.to_json()
+        comment_json['likes_count'] = get_comment_likes_count(comment)  # 评论获赞数
+        comments_json.append(comment_json)
     return comments_json
 
 
