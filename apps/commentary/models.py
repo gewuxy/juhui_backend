@@ -58,7 +58,7 @@ class BlogComment(models.Model):
 
     def to_json(self):
         d = {}
-        D['comment_id'] = self.id
+        d['comment_id'] = self.id
         d['blog_id'] = self.blog.id
         d['blog_title'] = self.blog.title
         d['author_name'] = self.author.nickname
