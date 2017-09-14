@@ -332,4 +332,6 @@ def get_notices(request):
     notices_json = []
     for notice in notices[start:end]:
         notices_json.append(notice.to_json())
+        notice.is_read = True
+        notice.save()
     return JsonResponse(get_response_data('000000', notices_json))
