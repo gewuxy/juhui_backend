@@ -343,6 +343,7 @@ def get_notices(request):
         notice.save()
     return JsonResponse(get_response_data('000000', notices_json))
 
+
 def get_wine_blogs(request):
     '''
     获取葡萄酒相关新帖列表
@@ -359,7 +360,7 @@ def get_wine_blogs(request):
         page_num = int(page_num)
     except Exception:
         return JsonResponse(get_response_data('000002'))
-    wine_blogs = WineBlog.objects.filter(wine=wine).order_by('-create_time')  # 需优化
+    wine_blogs = WineBlog.objects.filter(wine=wine, blog__is_delete=False).order_by('-blog__create_time')  # 需优化
     start = (page - 1) * page_num
     end = page * page_num
     blogs_json = []
