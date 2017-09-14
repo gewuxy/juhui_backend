@@ -308,7 +308,7 @@ def delete_comment_like(request):
     return JsonResponse(get_response_data('000000'))
 
 
-@api_view(['POST'])
+@api_view(['GET'])
 @permission_classes((IsAuthenticated, ))
 def get_notices(request):
     '''
