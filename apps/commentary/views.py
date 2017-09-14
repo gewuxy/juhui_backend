@@ -1,8 +1,9 @@
 # -*- coding: utf8 -*-
 from django.http import JsonResponse
 from apps import get_response_data
-from apps.commentary.models import Blog, BlogComment, Likes, CommentLikes, Notice
+from apps.commentary.models import Blog, BlogComment, Likes, CommentLikes, Notice, WineBlog
 from apps.account.models import Jh_User
+from apps.wine.models import WineInfo
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import api_view, permission_classes
 from apps.commentary import views_lib
@@ -31,15 +32,10 @@ def save_blog(request):
     first_img = request.POST.get('first_img', '')
     area = request.POST.get('area', '')
     friends = request.POST.get('friends', [])
+    wines = request.POST.get('wines')
     if friends:
         try:
             friends = friends.split('|')
-        except Exception:
-            return JsonResponse(get_response_data('000002'))
-    wines = request.POST.get('wines', [])
-    if wines:
-        try:
-            wines = wines.split('|')
         except Exception:
             return JsonResponse(get_response_data('000002'))
 
@@ -53,9 +49,20 @@ def save_blog(request):
     blog.save()
     create_time = blog.create_time.strftime('%Y-%m-%d %H:%M:%S')
 
-    # 通知用户
+    # 通知所@朋友
+    for friend in friends:
+        try:
+            friend_obj = Jh_User.objects.get(id=friend)
+        except Exception:
+            continue
+        views_lib.notice_friends(
+            'call_friends', content, create_time, friend_obj.id, jh_user.id, jh_user.nickname, jh_user.img_url)
+
+    # 通知所$葡萄酒
+    views_lib.notice_wine(wines, blog)
+
+    # 通知所有用户
     views_lib.notice_friends('new_commentary', '新短评', create_time)
-    _logger.info('new_commentary | 新短评 | {0}'.format(create_time))
 
     return JsonResponse(get_response_data('000000'))
 
@@ -335,3 +342,27 @@ def get_notices(request):
         notice.is_read = True
         notice.save()
     return JsonResponse(get_response_data('000000', notices_json))
+
+def get_wine_blogs(request):
+    '''
+    获取葡萄酒相关新帖列表
+    '''
+    wine_code = request.GET.get('code', '')
+    try:
+        wine = WineInfo.objects.get(code=wine_code)
+    except Exception:
+        return JsonResponse(get_response_data('000002'))
+    page = request.GET.get('page', 1)
+    page_num = request.GET.get('page_num', 10)
+    try:
+        page = int(page)
+        page_num = int(page_num)
+    except Exception:
+        return JsonResponse(get_response_data('000002'))
+    wine_blogs = WineBlog.objects.filter(wine=wine).order_by('-create_time')  # 需优化
+    start = (page - 1) * page_num
+    end = page * page_num
+    blogs_json = []
+    for wine_blog in wine_blogs[start:end]:
+        blogs_json.append(wine_blog.blog.to_json())
+    return JsonResponse(get_response_data('000000', blogs_json))

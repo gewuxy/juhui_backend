@@ -1,6 +1,7 @@
 # -*- coding: utf8 -*-
 from django.db import models
 from apps.account.models import Jh_User
+from apps.wine.models import WineInfo
 
 
 class Blog(models.Model):
@@ -132,3 +133,17 @@ class Notice(models.Model):
         d['create_time'] = self.create_time.strftime('%Y-%m-%d %H:%M:%S')
         d['is_read'] = self.is_read
         return d
+
+
+class WineBlog(models.Model):
+    '''
+    关于葡萄酒的帖子
+    '''
+    wine = models.ForeignKey(WineInfo)
+    blog = models.ForeignKey(Blog)
+
+    class Meta:
+        db_table = 'commentary_wine_blog'
+
+    def __str__(self):
+        return '{0}-{1}'.format(self.wine.code, self.blog.author.nickname)

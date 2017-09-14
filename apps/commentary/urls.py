@@ -12,7 +12,8 @@ from apps.commentary.views import (
     get_blog_list,
     save_comment_like,
     delete_comment_like,
-    get_notices
+    get_notices,
+    get_wine_blogs,
 )
 
 
@@ -29,4 +30,6 @@ urlpatterns = [
     url(r'^savecommentlike/$', save_comment_like, name='save_comment_like'),  # 存储评论获赞信息
     url(r'^deletecommentlike/$', delete_comment_like, name='delete_comment_like'),  # 取消评论的赞
     url(r'^getnotices/$', get_notices, name='get_notices'),  # 获取提醒消息列表
+    url(r'^getwineblogs/$', get_wine_blogs, name='get_wine_blogs'),  # 获取葡萄酒相关短评列表
+
 ]

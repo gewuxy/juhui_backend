@@ -1,6 +1,7 @@
 # -*- coding: utf8 -*-
-from apps.commentary.models import BlogComment, Likes, Blog, CommentLikes, Notice
+from apps.commentary.models import BlogComment, Likes, Blog, CommentLikes, Notice, WineBlog
 from apps.account.models import Attention, Jh_User
+from apps.wine.models import WineInfo
 import redis
 import json
 
@@ -26,11 +27,12 @@ def notice_friends(msg_type, content, create_time, to_id='', from_id='', from_na
     except Exception:
         return False
     # 存储消息
-    notice = Notice(from_user=from_user,
+    if msg_type != 'new_commentary':  # 有新短评消息实时通知给所有用户，不用存储在个人提醒消息数据表中
+        notice = Notice(from_user=from_user,
                     to_user=to_user,
                     msg_type=msg_type,
                     content=content)
-    notice.save()
+        notice.save()
     REDIS_CLIENT.publish('commentary', json.dumps({
         'msg_type': msg_type,
         'content': content,
@@ -41,6 +43,23 @@ def notice_friends(msg_type, content, create_time, to_id='', from_id='', from_na
         'from_img': from_img
     }))
     return True
+
+
+def notice_wine(wine_codes, blog):
+    '''
+    :param wine_codes: 葡萄酒codes，例如：227815|213254|112132
+    :param blog:  短评／长文
+    :return: 写入WineBlog数据表中
+    '''
+    try:
+        wine_codes = wine_codes.split('|')
+        for wine_code in wine_codes:
+            wine = WineInfo.objects.get(code=wine_code)
+            wine_blog = WineBlog(wine=wine, blog=blog)
+            wine_blog.save()
+        return True
+    except Exception:
+        return False
 
 
 def get_comments_count(blog):
