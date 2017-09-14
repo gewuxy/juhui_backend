@@ -11,7 +11,8 @@ from apps.commentary.views import (
     delete_like,
     get_blog_list,
     save_comment_like,
-    delete_comment_like
+    delete_comment_like,
+    get_notices
 )
 
 
@@ -27,4 +28,5 @@ urlpatterns = [
     url(r'^getbloglist/$', get_blog_list, name='get_blog_list'),  # 获取短评／长文列表
     url(r'^savecommentlike/$', save_comment_like, name='save_comment_like'),  # 存储评论获赞信息
     url(r'^deletecommentlike/$', delete_comment_like, name='delete_comment_like'),  # 取消评论的赞
+    url(r'^getnotices/$', get_notices, name='get_notices'),  # 获取提醒消息列表
 ]

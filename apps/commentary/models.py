@@ -99,3 +99,36 @@ class CommentLikes(models.Model):
 
     def __str__(self):
         return '{0}--{1}'.format(self.author.nickname, self.create_time)
+
+
+class Notice(models.Model):
+    '''
+    用户提醒消息
+    '''
+    from_user = models.ForeignKey(Jh_User, related_name='from_user')
+    to_user = models.ForeignKey(Jh_User, related_name='to_user')
+    msg_type = models.CharField(max_length=16, verbose_name='消息类型', default='')
+    content = models.TextField(verbose_name='消息内容', default='')
+    create_time = models.DateTimeField(auto_now_add=True)
+    is_read = models.BooleanField(verbose_name='是否已读', default=False)
+
+    class Meta:
+        db_table = 'commentary_notice'
+
+    def __str__(self):
+        return '{0} to {1}: {2}'.format(self.from_user.nickname, self.to_user.nickname, self.content)
+
+    def to_json(self):
+        d = {}
+        d['notice_id'] = self.id
+        d['from_user_id'] = self.from_user.id
+        d['from_user_name'] = self.from_user.nickname
+        d['from_user_img'] = self.from_user.img_url
+        d['to_user_id'] = self.to_user.id
+        d['to_user_name'] = self.to_user.nickname
+        d['to_user_img'] = self.to_user.img_url
+        d['msg_type'] = self.msg_type
+        d['content'] = self.content
+        d['create_time'] = self.create_time.strftime('%Y-%m-%d %H:%M:%S')
+        d['is_read'] = self.is_read
+        return d

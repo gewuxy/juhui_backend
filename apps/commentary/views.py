@@ -1,7 +1,7 @@
 # -*- coding: utf8 -*-
 from django.http import JsonResponse
 from apps import get_response_data
-from apps.commentary.models import Blog, BlogComment, Likes, CommentLikes
+from apps.commentary.models import Blog, BlogComment, Likes, CommentLikes, Notice
 from apps.account.models import Jh_User
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import api_view, permission_classes
@@ -306,3 +306,30 @@ def delete_comment_like(request):
     except Exception:
         return JsonResponse(get_response_data('000000'))
     return JsonResponse(get_response_data('000000'))
+
+
+@api_view(['POST'])
+@permission_classes((IsAuthenticated, ))
+def get_notices(request):
+    '''
+    获取提醒消息列表
+    '''
+    try:
+        jh_user = Jh_User.objects.get(user=request.user)
+    except Exception:
+        res = get_response_data('000004')
+        return JsonResponse(res)
+    page = request.GET.get('page', 1)
+    page_num = request.GET.get('page_num', 10)
+    try:
+        page = int(page)
+        page_num = int(page_num)
+    except Exception:
+        return JsonResponse(get_response_data('000002'))
+    notices = Notice.objects.filter(to_user=jh_user).order_by('-create_time')
+    start = (page - 1) * page_num
+    end = page * page_num
+    notices_json = []
+    for notice in notices[start:end]:
+        notices_json.append(notice.to_json())
+    return JsonResponse(get_response_data('000000', notices_json))

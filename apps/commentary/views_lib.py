@@ -1,6 +1,6 @@
 # -*- coding: utf8 -*-
-from apps.commentary.models import BlogComment, Likes, Blog, CommentLikes
-from apps.account.models import Attention
+from apps.commentary.models import BlogComment, Likes, Blog, CommentLikes, Notice
+from apps.account.models import Attention, Jh_User
 import redis
 import json
 
@@ -20,6 +20,17 @@ def notice_friends(msg_type, content, create_time, to_id='', from_id='', from_na
     '''
     if from_name is None:
         from_name = ''
+    try:
+        from_user = Jh_User.objects.get(id=from_id)
+        to_user = Jh_User.objects.get(id=to_id)
+    except Exception:
+        return False
+    # 存储消息
+    notice = Notice(from_user=from_user,
+                    to_user=to_user,
+                    msg_type=msg_type,
+                    content=content)
+    notice.save()
     REDIS_CLIENT.publish('commentary', json.dumps({
         'msg_type': msg_type,
         'content': content,
@@ -97,6 +108,10 @@ def get_blog_list(page=1, page_num=10, jh_user=None):
     :param jh_user: 登录用户
     :return:  短评／长文列表
     '''
+    if jh_user:  # 未读提醒消息数
+        not_read_count = Notice.objects.filter(to_user=jh_user, is_read=False).count()
+    else:
+        not_read_count = 0
     blogs = Blog.objects.filter(is_delete=False).order_by('-create_time')
     start = (page - 1) * page_num
     end = page * page_num
@@ -105,6 +120,7 @@ def get_blog_list(page=1, page_num=10, jh_user=None):
         tmp_blog = blog.to_json()
         tmp_blog['comments_count'] = get_comments_count(blog)
         tmp_blog['likes_count'] = get_likes_count(blog)
+        tmp_blog['notice_not_read'] = not_read_count
         if jh_user is None:
             tmp_blog['is_concerned'] = False
         else:
