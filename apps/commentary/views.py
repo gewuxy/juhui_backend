@@ -166,7 +166,12 @@ def get_blog_detail(request):
         blog = Blog.objects.get(id=blog_id)
     except Exception:
         return JsonResponse(get_response_data('000002'))
+    try:
+        jh_user = Jh_User.objects.get(user=request.user)
+    except Exception:
+        jh_user = None
     blog_json = blog.to_json()
+    blog_json['is_like'] = views_lib.is_like(blog, jh_user)  # 是否已点赞
     likes_count = views_lib.get_likes_count(blog)  # 获取获赞数
     blog_json['likes_count'] = likes_count
     comments_count = views_lib.get_comments_count(blog)  # 获取评论数

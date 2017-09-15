@@ -120,6 +120,19 @@ def is_concerned(from_user, to_user):
         return False
 
 
+def is_like(blog, user):
+    '''
+    :param blog: 短评／长文
+    :param user: 用户
+    :return: 是否已点赞
+    '''
+    rval = Likes.objects.filter(blog=blog, author=user, is_delete=False)
+    if rval:
+        return True
+    else:
+        return False
+
+
 def get_blog_list(page=1, page_num=10, jh_user=None):
     '''
     :param page: 页码
@@ -140,6 +153,7 @@ def get_blog_list(page=1, page_num=10, jh_user=None):
         tmp_blog['comments_count'] = get_comments_count(blog)
         tmp_blog['likes_count'] = get_likes_count(blog)
         tmp_blog['notice_not_read'] = not_read_count
+        tmp_blog['is_like'] = is_like(blog, jh_user)
         if jh_user is None:
             tmp_blog['is_concerned'] = False
         else:
